@@ -12,7 +12,7 @@ When the user asks for Steep metrics, Steep-as-code YAML, semantic modules, join
 2. Follow `.cursor/skills/generate-steep-modules/SKILL.md` end-to-end.
 3. Use `star-schema/models/marts/schema.yml` under `meta.steep` for module identifiers, target `schema`/`table`, `default_time_column`, `join_paths`, and `reference_metrics`. Use per-column `meta.dimension_type` and `example_values` for dimensions and filters.
 4. For filters and slices, use only `example_values` from `schema.yml` (or literals the user gave in chat). Optional BigQuery MCP if the user asked to verify distinct values in the warehouse.
-5. Write output under `modules/` (create if missing), one YAML file per `module_identifier`, 2-space indentation, unique metric identifiers across all files.
+5. Write output under `modules/` (create if missing), one YAML file per `module_identifier`, 2-space indentation, unique metric identifiers across all files. In git, **proactively** create and check out a feature branch (`git checkout -b …`) **before** adding or changing those files — do not wait for the user to ask; then push for Steep sync / PR (see SKILL Step 2b). Do not land module-only work straight on `main` when PR rules apply.
 6. Validate against `.cursor/skills/generate-steep-modules/references/yaml-schema-reference.md`; if unsure, defer to Steep [Code Reference](https://help.steep.app/setup-and-manage/code-reference). Index of Help links: `docs/README.md`.
 
 If the user explicitly wants a Markdown-only workflow, point them to `docs/STEEP-AS-CODE.md`.
