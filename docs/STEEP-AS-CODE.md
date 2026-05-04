@@ -1,6 +1,8 @@
 # Steep-as-code — manual guide (fallback)
 
-If the Cursor skill under `.cursor/skills/generate-steep-modules/` does not trigger, **`@` this file** in chat or paste the checklist below.
+**Sales (one attachment):** in Cursor use **`@README.md`** at the repo root, then your prompt — see the **New chat in Cursor** section there.
+
+If you still need this fallback checklist, **`@` this file** (`docs/STEEP-AS-CODE.md`) in chat or paste the checklist below.
 
 **Deep conventions (joins, cardinality, `identifier` vs `table`, metric time):** read [cursor-steep-guidance.md](cursor-steep-guidance.md) first — this file is the short checklist only.
 

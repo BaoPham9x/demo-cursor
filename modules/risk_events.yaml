@@ -1,0 +1,166 @@
+module:
+  identifier: risk_events
+  schema: steep_demo_v2
+  table: fact_risk_events
+  label: Risk Events
+  description: Risk and compliance events tied to customers, optional transaction and account.
+  dimensions:
+    - column: event_type
+      label: Event type
+      type: categorical
+    - column: severity
+      label: Severity
+      type: categorical
+    - column: status
+      label: Status
+      type: categorical
+    - column: created_at
+      label: Created at
+      type: time
+    - column: resolved_at
+      label: Resolved at
+      type: time
+    - column: description
+      label: Description
+      type: categorical
+  metrics:
+    - identifier: open_risk_events
+      name: Open Risk Events
+      calculation: count
+      time: fact_risk_events.created_at
+      time_grains:
+        - daily
+        - weekly
+        - monthly
+      filters:
+        - column: status
+          operator: in
+          expression: open,investigating
+      category: Risk
+      owner_emails:
+        - risk@acmepay.com
+      dimensions:
+        - severity
+        - event_type
+        - dim_customer.country
+        - fact_transactions.payment_method
+    - identifier: open_critical_risk_events
+      name: Open Critical Risk Events
+      calculation: count
+      time: fact_risk_events.created_at
+      time_grains:
+        - daily
+        - weekly
+        - monthly
+      filters:
+        - column: severity
+          operator: equals
+          expression: critical
+        - column: status
+          operator: in
+          expression: open,investigating
+      category: Risk
+      owner_emails:
+        - risk@acmepay.com
+      dimensions:
+        - event_type
+        - dim_customer.country
+        - fact_transactions.payment_method
+    - identifier: resolved_events
+      name: Resolved Risk Events
+      calculation: count
+      time: fact_risk_events.resolved_at
+      time_grains:
+        - daily
+        - weekly
+        - monthly
+      filters:
+        - column: status
+          operator: in
+          expression: resolved,false_positive
+      category: Risk
+      owner_emails:
+        - risk@acmepay.com
+      dimensions:
+        - severity
+        - event_type
+    - identifier: critical_events
+      name: Critical Severity Events
+      calculation: count
+      time: fact_risk_events.created_at
+      time_grains:
+        - daily
+        - weekly
+        - monthly
+      filters:
+        - column: severity
+          operator: equals
+          expression: critical
+      category: Risk
+      owner_emails:
+        - risk@acmepay.com
+      dimensions:
+        - status
+        - event_type
+        - dim_customer.country
+    - identifier: false_positive_rate
+      name: False Positive Rate
+      calculation: custom-ratio
+      numerator_sql: "SUM(CASE WHEN fact_risk_events.status = 'false_positive' THEN 1 END)"
+      denominator_sql: "COUNT(*)"
+      format: percentage
+      time: fact_risk_events.created_at
+      time_grains:
+        - daily
+        - weekly
+        - monthly
+      category: Risk
+      owner_emails:
+        - risk@acmepay.com
+      dimensions:
+        - event_type
+        - severity
+    - identifier: avg_resolution_time
+      name: Avg Resolution Time (Hours)
+      calculation: custom-value
+      sql_expression: "AVG(fact_risk_events.resolution_time_hours)"
+      time: fact_risk_events.created_at
+      time_grains:
+        - daily
+        - weekly
+        - monthly
+      category: Risk
+      owner_emails:
+        - risk@acmepay.com
+      dimensions:
+        - severity
+        - event_type
+  joinPaths:
+    - from:
+        column: customer_key
+      to:
+        schema: steep_demo_v2
+        table: dim_customer
+        column: customer_key
+      type: one-to-one
+    - from:
+        column: transaction_id
+      to:
+        schema: steep_demo_v2
+        table: fact_transactions
+        column: transaction_id
+      type: one-to-one
+    - from:
+        column: account_key
+      to:
+        schema: steep_demo_v2
+        table: dim_account
+        column: account_key
+      type: one-to-one
+    - from:
+        column: risk_event_type_key
+      to:
+        schema: steep_demo_v2
+        table: dim_risk_event_type
+        column: risk_event_type_key
+      type: one-to-one

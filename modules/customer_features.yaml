@@ -1,0 +1,66 @@
+module:
+  identifier: customer_features
+  schema: steep_demo_v2
+  table: fact_customer_features
+  label: Customer Features
+  description: Product feature flags per customer (adoption / activation).
+  dimensions:
+    - column: feature_name
+      label: Feature name
+      type: categorical
+    - column: feature_category
+      label: Feature category
+      type: categorical
+    - column: is_active
+      label: Is active
+      type: categorical
+    - column: activated_at
+      label: Activated at
+      type: time
+    - column: last_used_at
+      label: Last used at
+      type: time
+  metrics:
+    - identifier: unique_customers_with_features
+      name: Unique Customers With Features
+      calculation: count-distinct
+      distinct_on: fact_customer_features.customer_key
+      time: fact_customer_features.activated_at
+      time_grains:
+        - daily
+        - weekly
+        - monthly
+      category: Commercial
+      owner_emails:
+        - finance@acmepay.com
+      dimensions:
+        - feature_name
+        - feature_category
+        - dim_customer.country
+        - dim_customer.customer_tier
+    - identifier: feature_adoption_rate
+      name: Feature Adoption Rate
+      calculation: custom-ratio
+      numerator_sql: "COUNT(DISTINCT fact_customer_features.customer_key)"
+      denominator_sql: "COUNT(dim_customer.customer_id)"
+      format: percentage
+      time: fact_customer_features.activated_at
+      time_grains:
+        - daily
+        - weekly
+        - monthly
+      category: Commercial
+      owner_emails:
+        - finance@acmepay.com
+      dimensions:
+        - feature_category
+        - dim_customer.country
+        - dim_customer.customer_tier
+  joinPaths:
+    - from:
+        column: customer_key
+      to:
+        schema: steep_demo_v2
+        table: dim_customer
+        column: customer_key
+      type: one-to-one

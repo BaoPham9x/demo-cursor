@@ -4,7 +4,28 @@ Sales-friendly Cursor workspace: generate **Steep-as-code** YAML (`modules/*.yam
 
 **Handoff:** This repo is a **template** — the bundled skill and YAML reference are **portable**; the mart names, join graph, and questionnaire content are **examples** until you replace them.
 
-**Also read:** [AGENTS.md](AGENTS.md) · **[docs/cursor-steep-guidance.md](docs/cursor-steep-guidance.md)** (canonical Steep conventions — joins, metrics, anti-bias) · [docs/](docs/) (index + Steep Help links) · [docs/STEEP-AS-CODE.md](docs/STEEP-AS-CODE.md) (`@` if the skill does not trigger)
+---
+
+## New chat in Cursor — one attachment
+
+**Sales / new chat:** In Cursor, type **`@README.md`** and then your request in plain English. You do **not** need to attach `business-context.md`, `schema.yml`, or other folders — the agent opens those files from this repo when generating Steep-as-code YAML under [`modules/`](modules/).
+
+**Quick options in the same message:**
+
+- *“Use the example questionnaire as-is.”* — keeps the pre-filled Acme Pay defaults in [`business-context.md`](business-context.md) (fine for internal demos).
+- *“I have BigQuery MCP configured.”* — optional; ask for a warehouse cross-check on columns if something looks ambiguous; YAML shape should still follow [`star-schema/models/marts/schema.yml`](star-schema/models/marts/schema.yml).
+
+**Copy-paste prompts** (put these right after `@README.md`):
+
+1. **Finance (default story):** *“Generate Steep-as-code YAML under `modules/` for the Finance team’s top questions from this repo.”*
+2. **Example questionnaire:** *“Generate Steep modules for Operations using the example business context as-is.”*
+3. **One mart:** *“Generate Steep YAML for the transactions mart only; respect the deny list in business-context.”*
+4. **Risk:** *“Add fraud-style metrics on transactions with risk joins; follow join paths in schema.yml.”*
+5. **Bootstrap several marts:** *“Create Steep modules for transactions, subscriptions, and fact_agg_arr with dimensions and join paths from this repo.”*
+
+**If the assistant seems lost:** add **`@docs/STEEP-AS-CODE.md`** once, or write *“Follow AGENTS.md and docs/cursor-steep-guidance.md for this repo.”*
+
+**Repo index (browse anytime):** [AGENTS.md](AGENTS.md) · **[docs/cursor-steep-guidance.md](docs/cursor-steep-guidance.md)** (joins, metrics, anti-bias) · [docs/](docs/) (Steep Help links) · [docs/STEEP-AS-CODE.md](docs/STEEP-AS-CODE.md) (short fallback checklist).
 
 ---
 
@@ -18,7 +39,7 @@ Open **[business-context.md](business-context.md)** before you ask Cursor to gen
 | The deny-list (sensitive fields) keeps **email / names / lat-long** off default dimension lists. | Risk of surfacing PII-style fields in YAML. |
 | It ships **pre-filled** (Acme Pay, B2B neobank) so you can demo in 30 seconds **or** overwrite for a real prospect. | — |
 
-**Suggested flow:** edit `business-context.md` (or confirm the defaults) → then use prompts like *“Using business-context.md, generate the Finance team’s metrics under `modules/`.”*
+**Suggested flow:** edit [`business-context.md`](business-context.md) (or confirm the defaults) → in Cursor use **`@README.md`** plus a prompt from **New chat in Cursor** above (no need to list other paths).
 
 ---
 
@@ -91,33 +112,23 @@ See [Cursor MCP](https://docs.cursor.com/context/mcp) if tools do not appear. Au
 
 ### Prompt ideas when MCP is on
 
-- *“Using business-context.md and schema.yml, generate Finance metrics; use BigQuery MCP to confirm `fact_transactions` columns match before writing YAML.”*
-- *“List tables in `my-project.steep_demo_v2` and suggest Steep modules; align join paths with schema.yml.”*
+- *“`@README.md` — generate Finance metrics; use BigQuery MCP to confirm `fact_transactions` columns match before writing YAML.”*
+- *“`@README.md` — list tables in `my-project.steep_demo_v2` and suggest Steep modules; align join paths with schema.yml.”*
 
 ---
 
-## 4. Try these prompts (after step 1)
-
-1. **Finance:** *“Using business-context.md, generate the metrics our Finance team asked for as Steep modules under `modules/`.”*
-2. **Risk:** *“Add fraud-style metrics on transactions with risk joins; follow join paths in `star-schema/models/marts/schema.yml`.”*
-3. **Bootstrap:** *“Create Steep modules for transactions, subscriptions, and fact_agg_arr with dimensions and join paths.”*
-
-Cursor should follow [.cursor/skills/generate-steep-modules/SKILL.md](.cursor/skills/generate-steep-modules/SKILL.md) and [.cursor/rules/steep-conventions.mdc](.cursor/rules/steep-conventions.mdc).
-
----
-
-## 5. What is in this repo
+## 4. What is in this repo
 
 | Path | Purpose |
 |------|---------|
 | [business-context.md](business-context.md) | Questionnaire: company, teams, questions, categories, deny-list. |
 | [star-schema/](star-schema/) | dbt mart SQL + enriched [models/marts/schema.yml](star-schema/models/marts/schema.yml). |
-| [modules/](modules/) | Output folder for generated YAML (see [modules/README.md](modules/README.md)). |
+| [modules/](modules/) | Output for Steep-as-code YAML (e.g. `transactions.yaml`). Git tracks only a **`.gitkeep`** placeholder until you generate files (`@README.md` + prompt); treat generated `*.yaml` as local unless you commit them. |
 | [.cursor/skills/generate-steep-modules/](.cursor/skills/generate-steep-modules/) | Skill + local YAML reference + metric patterns. |
 | [docs/](docs/) | **Steep Help Center links**, [cursor-steep-guidance.md](docs/cursor-steep-guidance.md) (**deep conventions**), [STEEP-AS-CODE.md](docs/STEEP-AS-CODE.md) (short fallback). |
 
 ---
 
-## 6. BigQuery and dbt (optional)
+## 5. BigQuery and dbt (optional)
 
 Mart SQL under `star-schema/models/marts/` may reference fixed project/dataset names (e.g. `steep-demo.steep_demo_v2`). Replace with yours, load data, then run `dbt run` from `star-schema/` when you want warehouse-backed tables. For Cursor-only demos, **sections 1–2** are enough; add **section 3** when BigQuery MCP is configured.

@@ -1,0 +1,108 @@
+module:
+  identifier: agg_arr
+  schema: steep_demo_v2
+  table: fact_agg_arr
+  label: Aggregated ARR
+  description: Monthly ARR snapshot per active subscription (time series for MRR/ARR reporting).
+  dimensions:
+    - column: snapshot_date
+      label: Snapshot date
+      type: time
+    - column: month_key
+      label: Month key
+      type: categorical
+    - column: plan_name
+      label: Plan name
+      type: categorical
+    - column: currency
+      label: Currency
+      type: categorical
+    - column: status
+      label: Status
+      type: categorical
+    - column: billing_cycle
+      label: Billing cycle
+      type: categorical
+    - column: is_active
+      label: Is active
+      type: categorical
+    - column: started_at
+      label: Started at
+      type: time
+    - column: ended_at
+      label: Ended at
+      type: time
+  metrics:
+    - identifier: mrr
+      name: MRR
+      calculation: sum
+      value: fact_agg_arr.mrr
+      time: fact_agg_arr.snapshot_date
+      time_grains:
+        - monthly
+        - quarterly
+        - yearly
+      category: Commercial
+      owner_emails:
+        - finance@acmepay.com
+      dimensions:
+        - plan_name
+        - dim_customer.country
+        - dim_customer.customer_tier
+    - identifier: total_arr
+      name: Total ARR
+      calculation: sum
+      value: fact_agg_arr.arr_contribution
+      time: fact_agg_arr.snapshot_date
+      time_grains:
+        - monthly
+        - quarterly
+        - yearly
+      category: Commercial
+      owner_emails:
+        - finance@acmepay.com
+      dimensions:
+        - plan_name
+        - dim_customer.country
+        - dim_customer.customer_tier
+    - identifier: active_subscriptions
+      name: Active Subscriptions
+      calculation: count
+      time: fact_agg_arr.snapshot_date
+      time_grains:
+        - monthly
+        - quarterly
+        - yearly
+      category: Commercial
+      owner_emails:
+        - finance@acmepay.com
+      dimensions:
+        - plan_name
+        - dim_customer.country
+        - dim_customer.customer_tier
+    - identifier: avg_arr_per_subscription
+      name: Avg ARR per Subscription
+      calculation: custom-ratio
+      numerator_sql: "SUM(fact_agg_arr.arr_contribution)"
+      denominator_sql: "COUNT(DISTINCT fact_agg_arr.subscription_id)"
+      format: number
+      time: fact_agg_arr.snapshot_date
+      time_grains:
+        - monthly
+        - quarterly
+        - yearly
+      category: Commercial
+      owner_emails:
+        - finance@acmepay.com
+      dimensions:
+        - plan_name
+        - dim_customer.country
+        - dim_customer.customer_tier
+  joinPaths:
+    - from:
+        column: customer_key
+      to:
+        schema: steep_demo_v2
+        table: dim_customer
+        column: customer_key
+      type: one-to-one
