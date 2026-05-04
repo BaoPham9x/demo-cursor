@@ -1,0 +1,754 @@
+# Enriched semantic metadata for Steep-as-code generation (read by Cursor skill).
+# Distilled from demo-data-generator data-generation/models/fintech/*.ts and modules/*.yaml.
+# BigQuery dataset placeholder: steep_demo_v2 (replace in generated YAML if your dataset differs).
+
+version: 2
+
+models:
+  - name: dim_customer
+    description: >
+      Customer dimension (SMB neobank). Includes KYB lifecycle, activation, tier, and
+      derived fields is_activated, kyb_completion_days, time_to_activation_days.
+    meta:
+      steep:
+        module_identifier: customers
+        label: Dim Customer
+        target_schema: steep_demo_v2
+        target_table: dim_customer
+        default_time_column: created_at
+        default_category: Commercial
+        join_paths:
+          - from_column: customer_key
+            to_table: dim_account
+            to_column: customer_id
+            join_type: one-to-many
+          - from_column: customer_key
+            to_table: fact_transactions
+            to_column: customer_key
+            join_type: one-to-many
+          - from_column: customer_key
+            to_table: fact_subscriptions
+            to_column: customer_key
+            join_type: one-to-many
+          - from_column: customer_key
+            to_table: fact_agg_arr
+            to_column: customer_key
+            join_type: one-to-many
+          - from_column: customer_key
+            to_table: fact_risk_events
+            to_column: customer_key
+            join_type: one-to-many
+          - from_column: customer_key
+            to_table: fact_customer_features
+            to_column: customer_key
+            join_type: one-to-many
+        reference_metrics:
+          - identifier: total_customers
+            name: Customer Acquisition
+            calculation: count
+            time: dim_customer.created_at
+            category: Commercial
+          - identifier: registrations
+            name: Registrations
+            calculation: count
+            time: dim_customer.created_at
+            category: Marketing
+          - identifier: activated_customers
+            name: Activated Customers
+            calculation: count
+            filter: "is_activated equals 1"
+            time: dim_customer.created_at
+            category: Commercial
+          - identifier: activation_rate
+            name: Activation Rate
+            calculation: custom-ratio
+            numerator_sql: "SUM(CASE WHEN dim_customer.is_activated = 1 THEN 1 END)"
+            denominator_sql: "COUNT(*)"
+            format: percentage
+            time: dim_customer.created_at
+            category: Commercial
+          - identifier: kyc_approved
+            name: KYC Approved %
+            calculation: custom-ratio
+            numerator_sql: "SUM(CASE WHEN dim_customer.kyb_status = 'approved' THEN 1 END)"
+            denominator_sql: "COUNT(*)"
+            format: percentage
+            time: dim_customer.created_at
+            category: Operations
+          - identifier: avg_kyb_completion_days
+            name: Avg KYC Completion Days
+            calculation: custom-value
+            sql_expression: "AVG(dim_customer.kyb_completion_days)"
+            time: dim_customer.created_at
+            category: Operations
+          - identifier: avg_time_to_activation
+            name: Avg Time to Activation (Days)
+            calculation: custom-value
+            sql_expression: "AVG(dim_customer.time_to_activation_days)"
+            time: dim_customer.created_at
+            category: Operations
+    columns:
+      - name: customer_key
+        description: Primary business key (= customer_id).
+        meta: { dimension_type: none, is_join_key: true }
+      - name: customer_id
+        meta: { dimension_type: none, is_join_key: true }
+      - name: first_name
+        meta: { dimension_type: categorical }
+      - name: last_name
+        meta: { dimension_type: categorical, sensitive: true }
+      - name: email
+        meta: { dimension_type: categorical, sensitive: true }
+      - name: country
+        meta: { dimension_type: country, example_values: ["US", "GB", "NL", "SE", "ES"] }
+      - name: city
+        meta: { dimension_type: city }
+      - name: region
+        meta: { dimension_type: categorical, example_values: ["Europe", "North America"] }
+      - name: timezone
+        meta: { dimension_type: categorical }
+      - name: registration_source
+        meta: { dimension_type: categorical, example_values: ["google", "meta", "organic"] }
+      - name: kyb_status
+        meta: { dimension_type: categorical, example_values: ["approved", "not_started", "pending"] }
+      - name: customer_tier
+        meta: { dimension_type: categorical, example_values: ["free", "starter", "pro", "enterprise"] }
+      - name: account_status
+        meta: { dimension_type: categorical, example_values: ["active", "suspended"] }
+      - name: risk_score
+        description: Numeric risk score 0-1000 (metric candidate, not a Steep dimension).
+        meta: { dimension_type: none, unit: score_0_1000 }
+      - name: created_at
+        meta: { dimension_type: time }
+      - name: kyb_started_at
+        meta: { dimension_type: time }
+      - name: kyb_submitted_at
+        meta: { dimension_type: time }
+      - name: kyb_approved_at
+        meta: { dimension_type: time }
+      - name: activated_at
+        meta: { dimension_type: time }
+      - name: is_activated
+        meta: { dimension_type: categorical, example_values: ["0", "1"] }
+      - name: kyb_completion_days
+        meta: { dimension_type: none, unit: days }
+      - name: time_to_activation_days
+        meta: { dimension_type: none, unit: days }
+
+  - name: dim_account
+    description: Bank account dimension per customer (checking/savings, limits, balances).
+    meta:
+      steep:
+        module_identifier: accounts
+        label: Dim Accounts
+        target_schema: steep_demo_v2
+        target_table: dim_account
+        default_time_column: created_at
+        join_paths:
+          - from_column: account_id
+            to_table: fact_transactions
+            to_column: account_key
+            join_type: one-to-many
+        reference_metrics:
+          - identifier: avg_credit_limit
+            name: Avg Credit Limit
+            calculation: custom-value
+            sql_expression: "AVG(dim_account.credit_limit)"
+            time: dim_account.created_at
+            category: Operations
+    columns:
+      - name: account_key
+        meta: { dimension_type: none, is_join_key: true }
+      - name: account_id
+        meta: { dimension_type: none, is_join_key: true }
+      - name: customer_id
+        meta: { dimension_type: none, is_join_key: true }
+      - name: account_type
+        meta: { dimension_type: categorical, example_values: ["checking", "savings"] }
+      - name: account_status
+        meta: { dimension_type: categorical }
+      - name: currency
+        meta: { dimension_type: categorical, example_values: ["USD"] }
+      - name: credit_limit
+        meta: { dimension_type: none, unit: currency_amount }
+      - name: credit_score
+        meta: { dimension_type: none }
+      - name: current_balance
+        meta: { dimension_type: none, unit: currency_amount }
+      - name: created_at
+        meta: { dimension_type: time }
+      - name: balance_updated_at
+        meta: { dimension_type: time }
+
+  - name: dim_merchant
+    description: Distinct merchants derived from transactions (merchant_key = name|category).
+    meta:
+      steep:
+        module_identifier: merchants
+        label: Merchants
+        target_schema: steep_demo_v2
+        target_table: dim_merchant
+        note: "No default time on dimension-only table; metrics usually live on fact_transactions."
+    columns:
+      - name: merchant_key
+        meta: { dimension_type: none, is_join_key: true }
+      - name: merchant_name
+        meta: { dimension_type: categorical }
+      - name: merchant_category
+        meta: { dimension_type: categorical, example_values: ["healthcare", "other", "internal"] }
+
+  - name: dim_risk_event_type
+    description: Distinct risk event types with default severity mapping.
+    meta:
+      steep:
+        module_identifier: risk_event_types
+        label: Risk Event Types
+        target_schema: steep_demo_v2
+        target_table: dim_risk_event_type
+    columns:
+      - name: risk_event_type_key
+        meta: { dimension_type: none, is_join_key: true }
+      - name: event_type
+        meta: { dimension_type: categorical, example_values: ["fraud_alert", "aml_flag", "suspicious_activity", "velocity_check"] }
+      - name: default_severity
+        meta: { dimension_type: categorical, example_values: ["critical", "high", "medium", "low"] }
+
+  - name: dim_date
+    description: Calendar spine 2024-01-01 through 2026-12-31 for date intelligence.
+    meta:
+      steep:
+        module_identifier: dates
+        label: Dates
+        target_schema: steep_demo_v2
+        target_table: dim_date
+        default_time_column: date
+    columns:
+      - name: date_key
+        meta: { dimension_type: none, is_join_key: true }
+      - name: date
+        meta: { dimension_type: time }
+      - name: year
+        meta: { dimension_type: none }
+      - name: quarter
+        meta: { dimension_type: none }
+      - name: month
+        meta: { dimension_type: none }
+      - name: month_name
+        meta: { dimension_type: categorical }
+      - name: week
+        meta: { dimension_type: none }
+      - name: day_of_week
+        meta: { dimension_type: none }
+      - name: day_name
+        meta: { dimension_type: categorical }
+      - name: is_weekend
+        meta: { dimension_type: categorical, example_values: ["0", "1"] }
+      - name: is_month_end
+        meta: { dimension_type: categorical, example_values: ["0", "1"] }
+
+  - name: fact_transactions
+    description: >
+      One row per money movement (card_spend, payment, deposit, withdrawal, transfer).
+      Joins to customer, account, merchant; can relate to risk events on transaction_id.
+    meta:
+      steep:
+        module_identifier: transactions
+        label: Transactions
+        target_schema: steep_demo_v2
+        target_table: fact_transactions
+        default_time_column: created_at
+        join_paths:
+          - from_column: customer_key
+            to_table: dim_customer
+            to_column: customer_key
+            join_type: many-to-one
+          - from_column: account_key
+            to_table: dim_account
+            to_column: account_key
+            join_type: many-to-one
+          - from_column: merchant_key
+            to_table: dim_merchant
+            to_column: merchant_key
+            join_type: many-to-one
+          - from_column: transaction_id
+            to_table: fact_risk_events
+            to_column: transaction_id
+            join_type: one-to-many
+        reference_metrics:
+          - identifier: revenue
+            calculation: sum
+            value: fact_transactions.amount
+            filter: "status equals completed"
+            time: fact_transactions.created_at
+            category: Commercial
+          - identifier: transaction_volume
+            calculation: sum
+            value: fact_transactions.amount
+            filter: "status equals completed"
+            time: fact_transactions.created_at
+            category: Commercial
+          - identifier: transaction_count
+            calculation: count
+            time: fact_transactions.created_at
+            category: Operations
+          - identifier: completed_transactions
+            calculation: count
+            filter: "status equals completed"
+            time: fact_transactions.created_at
+            category: Operations
+          - identifier: failed_transactions
+            calculation: count
+            filter: "status equals failed"
+            time: fact_transactions.created_at
+            category: Operations
+          - identifier: high_risk_transactions
+            calculation: count
+            filter: "risk_flag in high_risk,suspicious,aml_review"
+            time: fact_transactions.created_at
+            category: Operations
+          - identifier: success_rate
+            calculation: custom-ratio
+            numerator_sql: "SUM(CASE WHEN fact_transactions.status = 'completed' THEN 1 END)"
+            denominator_sql: "COUNT(*)"
+            format: percentage
+            time: fact_transactions.created_at
+            category: Operations
+          - identifier: avg_transaction_amount
+            calculation: custom-ratio
+            numerator_sql: "SUM(fact_transactions.amount)"
+            denominator_sql: "COUNT(*)"
+            format: number
+            filter: "status equals completed"
+            time: fact_transactions.created_at
+            category: Operations
+    columns:
+      - name: transaction_id
+        meta: { dimension_type: none, is_join_key: true }
+      - name: customer_id
+        meta: { dimension_type: none, is_join_key: true }
+      - name: customer_key
+        meta: { dimension_type: categorical, is_join_key: true }
+      - name: account_key
+        meta: { dimension_type: categorical, is_join_key: true }
+      - name: merchant_key
+        meta: { dimension_type: categorical, is_join_key: true }
+      - name: merchant_name
+        meta: { dimension_type: categorical }
+      - name: merchant_category
+        meta: { dimension_type: categorical }
+      - name: transaction_type
+        meta: { dimension_type: categorical, example_values: ["card_spend", "payment", "deposit", "withdrawal", "transfer"] }
+      - name: status
+        meta: { dimension_type: categorical, example_values: ["completed", "pending", "failed", "reversed"] }
+      - name: amount
+        meta: { dimension_type: none, unit: currency_amount }
+      - name: currency
+        meta: { dimension_type: categorical }
+      - name: fee_amount
+        meta: { dimension_type: none, unit: currency_amount }
+      - name: payment_method
+        meta: { dimension_type: categorical, example_values: ["card", "wallet", "bank_transfer", "ach"] }
+      - name: risk_flag
+        meta: { dimension_type: categorical, example_values: ["normal", "high_risk", "suspicious", "aml_review"] }
+      - name: country
+        meta: { dimension_type: country }
+      - name: city
+        meta: { dimension_type: city }
+      - name: latitude
+        meta: { dimension_type: none, sensitive: true }
+      - name: longitude
+        meta: { dimension_type: none, sensitive: true }
+      - name: h3_res_1
+        meta: { dimension_type: h3-cell-index }
+      - name: h3_res_2
+        meta: { dimension_type: h3-cell-index }
+      - name: h3_res_3
+        meta: { dimension_type: h3-cell-index }
+      - name: h3_res_4
+        meta: { dimension_type: h3-cell-index }
+      - name: h3_res_5
+        meta: { dimension_type: h3-cell-index }
+      - name: h3_res_6
+        meta: { dimension_type: h3-cell-index }
+      - name: h3_res_7
+        meta: { dimension_type: h3-cell-index }
+      - name: h3_res_8
+        meta: { dimension_type: h3-cell-index }
+      - name: h3_res_9
+        meta: { dimension_type: h3-cell-index }
+      - name: h3_res_10
+        meta: { dimension_type: h3-cell-index }
+      - name: location_key
+        meta: { dimension_type: categorical }
+      - name: created_at
+        meta: { dimension_type: time }
+
+  - name: fact_subscriptions
+    description: Subscription rows with MRR/ARR, plan, billing cycle, lifecycle timestamps.
+    meta:
+      steep:
+        module_identifier: subscriptions
+        label: Subscriptions
+        target_schema: steep_demo_v2
+        target_table: fact_subscriptions
+        default_time_column: started_at
+        join_paths:
+          - from_column: customer_key
+            to_table: dim_customer
+            to_column: customer_key
+            join_type: many-to-one
+        reference_metrics:
+          - identifier: avg_monthly_price
+            calculation: custom-value
+            sql_expression: "AVG(fact_subscriptions.monthly_price)"
+            filter: "status equals active"
+            time: fact_subscriptions.started_at
+            time_grains: [monthly, quarterly, yearly]
+            category: Commercial
+    columns:
+      - name: subscription_id
+        meta: { dimension_type: none, is_join_key: true }
+      - name: customer_key
+        meta: { dimension_type: none, is_join_key: true }
+      - name: plan_name
+        meta: { dimension_type: categorical, example_values: ["free", "starter", "pro", "enterprise"] }
+      - name: monthly_price
+        meta: { dimension_type: none, unit: currency_amount }
+      - name: currency
+        meta: { dimension_type: categorical }
+      - name: status
+        meta: { dimension_type: categorical, example_values: ["active", "trialing", "past_due", "cancelled"] }
+      - name: billing_cycle
+        meta: { dimension_type: categorical, example_values: ["monthly", "annual"] }
+      - name: billing_paused_at
+        meta: { dimension_type: time }
+      - name: suspended_at
+        meta: { dimension_type: time }
+      - name: mrr
+        meta: { dimension_type: none, unit: currency_amount }
+      - name: arr
+        meta: { dimension_type: none, unit: currency_amount }
+      - name: started_at
+        meta: { dimension_type: time }
+      - name: ended_at
+        meta: { dimension_type: time }
+      - name: created_at
+        meta: { dimension_type: time }
+
+  - name: fact_agg_arr
+    description: Monthly ARR snapshot per active subscription (time series for MRR/ARR reporting).
+    meta:
+      steep:
+        module_identifier: agg_arr
+        label: Aggregated ARR
+        target_schema: steep_demo_v2
+        target_table: fact_agg_arr
+        default_time_column: snapshot_date
+        join_paths:
+          - from_column: customer_key
+            to_table: dim_customer
+            to_column: customer_key
+            join_type: many-to-one
+        reference_metrics:
+          - identifier: mrr
+            calculation: sum
+            value: fact_agg_arr.mrr
+            time: fact_agg_arr.snapshot_date
+            time_grains: [monthly, quarterly, yearly]
+            category: Commercial
+          - identifier: total_arr
+            calculation: sum
+            value: fact_agg_arr.arr_contribution
+            time: fact_agg_arr.snapshot_date
+            time_grains: [monthly, quarterly, yearly]
+            category: Commercial
+          - identifier: active_subscriptions
+            calculation: count
+            time: fact_agg_arr.snapshot_date
+            time_grains: [monthly, quarterly, yearly]
+            category: Commercial
+          - identifier: avg_arr_per_subscription
+            calculation: custom-ratio
+            numerator_sql: "SUM(fact_agg_arr.arr_contribution)"
+            denominator_sql: "COUNT(DISTINCT fact_agg_arr.subscription_id)"
+            format: number
+            time: fact_agg_arr.snapshot_date
+            time_grains: [monthly, quarterly, yearly]
+            category: Commercial
+    columns:
+      - name: snapshot_date
+        meta: { dimension_type: time }
+      - name: month_key
+        meta: { dimension_type: categorical }
+      - name: year
+        meta: { dimension_type: none }
+      - name: month
+        meta: { dimension_type: none }
+      - name: subscription_id
+        meta: { dimension_type: none, is_join_key: true }
+      - name: customer_id
+        meta: { dimension_type: none, is_join_key: true }
+      - name: customer_key
+        meta: { dimension_type: none, is_join_key: true }
+      - name: plan_name
+        meta: { dimension_type: categorical }
+      - name: monthly_price
+        meta: { dimension_type: none }
+      - name: currency
+        meta: { dimension_type: categorical }
+      - name: status
+        meta: { dimension_type: categorical }
+      - name: billing_cycle
+        meta: { dimension_type: categorical }
+      - name: mrr
+        meta: { dimension_type: none, unit: currency_amount }
+      - name: arr
+        meta: { dimension_type: none }
+      - name: subscription_arr
+        meta: { dimension_type: none }
+      - name: arr_contribution
+        meta: { dimension_type: none, unit: currency_amount }
+      - name: is_active
+        meta: { dimension_type: categorical, example_values: ["0", "1"] }
+      - name: started_at
+        meta: { dimension_type: time }
+      - name: ended_at
+        meta: { dimension_type: time }
+
+  - name: fact_visitors
+    description: Daily aggregated web traffic by network/channel/country/campaign; joins ad spend via visitor_key.
+    meta:
+      steep:
+        module_identifier: visitors
+        label: Fact Visitors
+        target_schema: steep_demo_v2
+        target_table: fact_visitors
+        default_time_column: visitor_date
+        join_paths:
+          - from_column: visitor_key
+            to_table: fact_ad_spend
+            to_column: visitor_key
+            join_type: one-to-many
+          - from_column: date_key
+            to_table: dim_date
+            to_column: date_key
+            join_type: many-to-one
+        reference_metrics:
+          - identifier: total_visitors
+            calculation: sum
+            value: fact_visitors.total_visitors
+            time: fact_visitors.visitor_date
+            category: Marketing
+          - identifier: visitor_conversion_rate
+            calculation: custom-ratio
+            numerator_sql: "SUM(fact_visitors.total_conversions)"
+            denominator_sql: "SUM(fact_visitors.total_visitors)"
+            format: percentage
+            time: fact_visitors.visitor_date
+            category: Marketing
+    columns:
+      - name: visitor_date
+        meta: { dimension_type: time }
+      - name: date_key
+        meta: { dimension_type: none, is_join_key: true }
+      - name: network
+        meta: { dimension_type: categorical, example_values: ["google", "meta", "youtube", "organic"] }
+      - name: channel
+        meta: { dimension_type: categorical, example_values: ["video", "brand", "search"] }
+      - name: country
+        meta: { dimension_type: country }
+      - name: campaign_name
+        meta: { dimension_type: categorical }
+      - name: visitor_key
+        meta: { dimension_type: categorical, is_join_key: true }
+      - name: total_sessions
+        meta: { dimension_type: none }
+      - name: total_visitors
+        meta: { dimension_type: none }
+      - name: total_conversions
+        meta: { dimension_type: none }
+      - name: total_page_views
+        meta: { dimension_type: none }
+      - name: avg_time_on_site_seconds
+        meta: { dimension_type: none }
+      - name: conversion_rate_pct
+        meta: { dimension_type: none }
+      - name: avg_page_views_per_session
+        meta: { dimension_type: none }
+
+  - name: fact_ad_spend
+    description: Ad spend rows with conversions; visitor_key aligns to fact_visitors for marketing ROI.
+    meta:
+      steep:
+        module_identifier: ad_spend
+        label: Fact Ad spend
+        target_schema: steep_demo_v2
+        target_table: fact_ad_spend
+        default_time_column: created_at
+        join_paths:
+          - from_column: visitor_key
+            to_table: fact_visitors
+            to_column: visitor_key
+            join_type: many-to-one
+        reference_metrics:
+          - identifier: ad_spend
+            calculation: sum
+            value: fact_ad_spend.amount
+            time: fact_ad_spend.created_at
+            category: Marketing
+          - identifier: ad_conversions
+            calculation: sum
+            value: fact_ad_spend.conversions
+            time: fact_ad_spend.created_at
+            category: Marketing
+          - identifier: cpa
+            calculation: custom-ratio
+            numerator_sql: "SUM(fact_ad_spend.amount)"
+            denominator_sql: "SUM(fact_ad_spend.conversions)"
+            format: number
+            time: fact_ad_spend.created_at
+            category: Marketing
+    columns:
+      - name: ad_spend_id
+        meta: { dimension_type: none, is_join_key: true }
+      - name: network
+        meta: { dimension_type: categorical }
+      - name: channel
+        meta: { dimension_type: categorical }
+      - name: campaign_name
+        meta: { dimension_type: categorical }
+      - name: country
+        meta: { dimension_type: country }
+      - name: currency
+        meta: { dimension_type: categorical }
+      - name: amount
+        meta: { dimension_type: none, unit: currency_amount }
+      - name: conversions
+        meta: { dimension_type: none }
+      - name: created_at
+        meta: { dimension_type: time }
+      - name: visitor_key
+        meta: { dimension_type: categorical, is_join_key: true }
+
+  - name: fact_risk_events
+    description: Risk and compliance events tied to customers, optional transaction and account.
+    meta:
+      steep:
+        module_identifier: risk_events
+        label: Risk Events
+        target_schema: steep_demo_v2
+        target_table: fact_risk_events
+        default_time_column: created_at
+        join_paths:
+          - from_column: customer_key
+            to_table: dim_customer
+            to_column: customer_key
+            join_type: many-to-one
+          - from_column: transaction_id
+            to_table: fact_transactions
+            to_column: transaction_id
+            join_type: many-to-one
+          - from_column: account_key
+            to_table: dim_account
+            to_column: account_key
+            join_type: many-to-one
+          - from_column: risk_event_type_key
+            to_table: dim_risk_event_type
+            to_column: risk_event_type_key
+            join_type: many-to-one
+        reference_metrics:
+          - identifier: open_risk_events
+            calculation: count
+            filter: "status in open,investigating"
+            time: fact_risk_events.created_at
+            category: Operations
+          - identifier: resolved_events
+            calculation: count
+            filter: "status in resolved,false_positive"
+            time: fact_risk_events.resolved_at
+            category: Operations
+          - identifier: critical_events
+            calculation: count
+            filter: "severity equals critical"
+            time: fact_risk_events.created_at
+            category: Operations
+          - identifier: false_positive_rate
+            calculation: custom-ratio
+            numerator_sql: "SUM(CASE WHEN fact_risk_events.status = 'false_positive' THEN 1 END)"
+            denominator_sql: "COUNT(*)"
+            format: percentage
+            time: fact_risk_events.created_at
+            category: Operations
+          - identifier: avg_resolution_time
+            calculation: custom-value
+            sql_expression: "AVG(fact_risk_events.resolution_time_hours)"
+            time: fact_risk_events.created_at
+            category: Operations
+    columns:
+      - name: risk_event_id
+        meta: { dimension_type: none, is_join_key: true }
+      - name: customer_key
+        meta: { dimension_type: none, is_join_key: true }
+      - name: transaction_id
+        meta: { dimension_type: none, is_join_key: true }
+      - name: account_key
+        meta: { dimension_type: none, is_join_key: true }
+      - name: risk_event_type_key
+        meta: { dimension_type: categorical, is_join_key: true }
+      - name: event_type
+        meta: { dimension_type: categorical }
+      - name: severity
+        meta: { dimension_type: categorical, example_values: ["critical", "high", "medium", "low"] }
+      - name: status
+        meta: { dimension_type: categorical, example_values: ["open", "investigating", "resolved", "false_positive"] }
+      - name: created_at
+        meta: { dimension_type: time }
+      - name: resolved_at
+        meta: { dimension_type: time }
+      - name: resolution_time_hours
+        meta: { dimension_type: none, unit: hours }
+      - name: description
+        meta: { dimension_type: categorical }
+
+  - name: fact_customer_features
+    description: Product feature flags per customer (adoption / activation).
+    meta:
+      steep:
+        module_identifier: customer_features
+        label: Customer Features
+        target_schema: steep_demo_v2
+        target_table: fact_customer_features
+        default_time_column: activated_at
+        join_paths:
+          - from_column: customer_key
+            to_table: dim_customer
+            to_column: customer_key
+            join_type: many-to-one
+        reference_metrics:
+          - identifier: unique_customers_with_features
+            calculation: count
+            time: fact_customer_features.activated_at
+            category: Product
+          - identifier: feature_adoption_rate
+            calculation: custom-ratio
+            numerator_sql: "COUNT(DISTINCT fact_customer_features.customer_key)"
+            denominator_sql: "COUNT(dim_customer.customer_id)"
+            format: percentage
+            time: fact_customer_features.activated_at
+            category: Product
+            note: "Requires join to dim_customer; denominator is customer grain."
+    columns:
+      - name: customer_feature_id
+        meta: { dimension_type: none, is_join_key: true }
+      - name: customer_key
+        meta: { dimension_type: none, is_join_key: true }
+      - name: feature_name
+        meta: { dimension_type: categorical }
+      - name: feature_category
+        meta: { dimension_type: categorical, example_values: ["accounting", "receipts", "payments"] }
+      - name: is_active
+        meta: { dimension_type: categorical, example_values: ["true", "false"] }
+      - name: activated_at
+        meta: { dimension_type: time }
+      - name: last_used_at
+        meta: { dimension_type: time }

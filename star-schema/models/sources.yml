@@ -1,0 +1,16 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: demo_raw
+    tables:
+      - name: raw_customers
+      - name: raw_transactions
+      - name: raw_accounts
+      - name: raw_subscriptions
+      - name: raw_customer_features
+      - name: raw_ad_spend
+      - name: raw_visitors
+      - name: raw_balances
+      - name: raw_balances_1
+      - name: raw_balances_2
