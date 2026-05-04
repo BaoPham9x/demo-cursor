@@ -1,0 +1,89 @@
+module:
+  identifier: subscriptions
+  schema: steep_demo_v2
+  table: fact_subscriptions
+  label: Subscriptions
+  description: Subscription rows with MRR/ARR, plan, billing cycle, lifecycle timestamps.
+  dimensions:
+    - column: plan_name
+      label: Plan Name
+      type: categorical
+    - column: currency
+      label: Currency
+      type: categorical
+    - column: status
+      label: Status
+      type: categorical
+    - column: billing_cycle
+      label: Billing Cycle
+      type: categorical
+    - column: billing_paused_at
+      label: Billing Paused At
+      type: time
+    - column: suspended_at
+      label: Suspended At
+      type: time
+    - column: started_at
+      label: Started At
+      type: time
+    - column: ended_at
+      label: Ended At
+      type: time
+    - column: created_at
+      label: Created At
+      type: time
+  metrics:
+    - identifier: avg_monthly_price
+      name: Avg Monthly Price (Active)
+      description: Average monthly price for active subscriptions.
+      calculation: custom-value
+      sql_expression: "AVG(fact_subscriptions.monthly_price)"
+      time: fact_subscriptions.started_at
+      filters:
+        - column: status
+          operator: equals
+          expression: active
+      time_grains:
+        - monthly
+        - quarterly
+        - yearly
+      category: Commercial
+      owner_emails:
+        - finance@acmepay.com
+      dimensions:
+        - plan_name
+        - billing_cycle
+        - dim_customer.customer_tier
+      slices:
+        - name: US
+          filter:
+            column: dim_customer.country
+            operator: equals
+            expression: US
+    - identifier: subscriptions_mrr_total
+      name: Active Subscription MRR (Sum)
+      description: Sum of MRR on active subscriptions by plan and customer tier.
+      calculation: sum
+      value: fact_subscriptions.mrr
+      time: fact_subscriptions.started_at
+      filters:
+        - column: status
+          operator: equals
+          expression: active
+      time_grains:
+        - daily
+        - weekly
+        - monthly
+      category: Commercial
+      owner_emails:
+        - finance@acmepay.com
+      dimensions:
+        - plan_name
+        - billing_cycle
+        - dim_customer.customer_tier
+      slices:
+        - name: US
+          filter:
+            column: dim_customer.country
+            operator: equals
+            expression: US

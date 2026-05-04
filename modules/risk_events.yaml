@@ -1,0 +1,149 @@
+module:
+  identifier: risk_events
+  schema: steep_demo_v2
+  table: fact_risk_events
+  label: Risk Events
+  description: Risk and compliance events tied to customers, optional transaction and account.
+  dimensions:
+    - column: risk_event_type_key
+      label: Risk Event Type Key
+      type: categorical
+    - column: event_type
+      label: Event Type
+      type: categorical
+    - column: severity
+      label: Severity
+      type: categorical
+    - column: status
+      label: Status
+      type: categorical
+    - column: created_at
+      label: Created At
+      type: time
+    - column: resolved_at
+      label: Resolved At
+      type: time
+    - column: description
+      label: Description
+      type: categorical
+  metrics:
+    - identifier: open_risk_events
+      name: Open Risk Events
+      description: Count of risk events still open or under investigation.
+      calculation: count
+      time: fact_risk_events.created_at
+      filters:
+        - column: status
+          operator: in
+          expression: open,investigating
+      category: Risk
+      owner_emails:
+        - risk@acmepay.com
+      dimensions:
+        - severity
+        - event_type
+      time_grains:
+        - daily
+        - weekly
+        - monthly
+    - identifier: open_high_severity_risk_events
+      name: Open High-Severity Risk Events
+      description: Open or investigating events with critical or high severity.
+      calculation: count
+      time: fact_risk_events.created_at
+      filters:
+        - column: status
+          operator: in
+          expression: open,investigating
+        - column: severity
+          operator: in
+          expression: critical,high
+      category: Risk
+      owner_emails:
+        - risk@acmepay.com
+      dimensions:
+        - event_type
+        - dim_customer.country
+      time_grains:
+        - daily
+        - weekly
+        - monthly
+    - identifier: resolved_events
+      name: Resolved Risk Events
+      description: Events resolved or marked false positive, by resolution time.
+      calculation: count
+      time: fact_risk_events.resolved_at
+      filters:
+        - column: status
+          operator: in
+          expression: resolved,false_positive
+      category: Risk
+      owner_emails:
+        - risk@acmepay.com
+      dimensions:
+        - severity
+        - event_type
+      time_grains:
+        - daily
+        - weekly
+        - monthly
+    - identifier: critical_events
+      name: Critical Severity Events
+      description: Count of critical-severity risk events.
+      calculation: count
+      time: fact_risk_events.created_at
+      filters:
+        - column: severity
+          operator: equals
+          expression: critical
+      category: Risk
+      owner_emails:
+        - risk@acmepay.com
+      dimensions:
+        - status
+        - event_type
+      time_grains:
+        - daily
+        - weekly
+        - monthly
+    - identifier: false_positive_rate
+      name: False Positive Rate
+      description: Share of risk events marked false positive.
+      calculation: custom-ratio
+      numerator_sql: "SUM(CASE WHEN fact_risk_events.status = 'false_positive' THEN 1 END)"
+      denominator_sql: "COUNT(*)"
+      format: percentage
+      time: fact_risk_events.created_at
+      category: Risk
+      owner_emails:
+        - risk@acmepay.com
+      dimensions:
+        - event_type
+        - severity
+      time_grains:
+        - daily
+        - weekly
+        - monthly
+    - identifier: avg_resolution_time
+      name: Avg Resolution Time (Hours)
+      description: Average hours to resolve risk events from creation.
+      calculation: custom-value
+      sql_expression: "AVG(fact_risk_events.resolution_time_hours)"
+      time: fact_risk_events.created_at
+      category: Risk
+      owner_emails:
+        - risk@acmepay.com
+      dimensions:
+        - severity
+        - event_type
+      time_grains:
+        - daily
+        - weekly
+        - monthly
+  joinPaths:
+    - from:
+        column: transaction_id
+      to:
+        table: fact_transactions
+        column: transaction_id
+      type: one-to-one

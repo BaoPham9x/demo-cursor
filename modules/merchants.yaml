@@ -1,0 +1,13 @@
+module:
+  identifier: merchants
+  schema: steep_demo_v2
+  table: dim_merchant
+  label: Merchants
+  description: Distinct merchants derived from transactions (merchant_key = name|category).
+  dimensions:
+    - column: merchant_name
+      label: Merchant Name
+      type: categorical
+    - column: merchant_category
+      label: Merchant Category
+      type: categorical

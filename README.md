@@ -125,7 +125,11 @@ See [Cursor MCP](https://docs.cursor.com/context/mcp) if tools do not appear. Au
 | [star-schema/](star-schema/) | dbt mart SQL + enriched [models/marts/schema.yml](star-schema/models/marts/schema.yml). |
 | [modules/](modules/) | Output for Steep-as-code YAML (e.g. `transactions.yaml`). Git tracks only a **`.gitkeep`** placeholder until you generate files (`@README.md` + prompt); treat generated `*.yaml` as local unless you commit them. |
 | [.cursor/skills/generate-steep-modules/](.cursor/skills/generate-steep-modules/) | Skill + local YAML reference + metric patterns. |
-| [docs/](docs/) | **Steep Help Center links**, [cursor-steep-guidance.md](docs/cursor-steep-guidance.md) (**deep conventions**), [STEEP-AS-CODE.md](docs/STEEP-AS-CODE.md) (short fallback). |
+| [docs/](docs/) | **Steep Help Center links**, [cursor-steep-guidance.md](docs/cursor-steep-guidance.md) (**deep conventions**), [STEEP-AS-CODE.md](docs/STEEP-AS-CODE.md) (short fallback checklist). |
+
+### Git branch for `modules/` (create, commit, **push**)
+
+When generating Steep-as-code YAML, follow [AGENTS.md](AGENTS.md) / the bundled skill: **create a feature branch before editing `modules/`**, then **commit** the new or changed `*.yaml` files. **Push that branch to the remote** (for example `git push -u origin steep/your-topic`) as part of the same flow. A branch that only exists locally does **not** show up on GitHub/GitLab or in teammates’ clones, and Steep **Define in Code** sync expects a branch on the host you connected. If you skip the push, you will not see the branch on the remote until you run it yourself.
 
 ---
 

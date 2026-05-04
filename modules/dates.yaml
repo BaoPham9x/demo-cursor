@@ -1,0 +1,22 @@
+module:
+  identifier: dates
+  schema: steep_demo_v2
+  table: dim_date
+  label: Dates
+  description: Calendar spine 2024-01-01 through 2026-12-31 for date intelligence.
+  dimensions:
+    - column: date
+      label: Date
+      type: time
+    - column: month_name
+      label: Month Name
+      type: categorical
+    - column: day_name
+      label: Day Name
+      type: categorical
+    - column: is_weekend
+      label: Is Weekend
+      type: categorical
+    - column: is_month_end
+      label: Is Month End
+      type: categorical

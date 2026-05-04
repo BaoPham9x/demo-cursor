@@ -1,0 +1,222 @@
+module:
+  identifier: customers
+  schema: steep_demo_v2
+  table: dim_customer
+  label: Dim Customer
+  description: >
+    Customer dimension (SMB neobank). Includes KYB lifecycle, activation, tier, and
+    derived fields is_activated, kyb_completion_days, time_to_activation_days.
+  dimensions:
+    - column: country
+      label: Country
+      type: country
+    - column: city
+      label: City
+      type: city
+    - column: region
+      label: Region
+      type: categorical
+    - column: timezone
+      label: Timezone
+      type: categorical
+    - column: registration_source
+      label: Registration Source
+      type: categorical
+    - column: kyb_status
+      label: KYB Status
+      type: categorical
+    - column: customer_tier
+      label: Customer Tier
+      type: categorical
+    - column: account_status
+      label: Account Status
+      type: categorical
+    - column: created_at
+      label: Created At
+      type: time
+    - column: kyb_started_at
+      label: KYB Started At
+      type: time
+    - column: kyb_submitted_at
+      label: KYB Submitted At
+      type: time
+    - column: kyb_approved_at
+      label: KYB Approved At
+      type: time
+    - column: activated_at
+      label: Activated At
+      type: time
+    - column: is_activated
+      label: Is Activated
+      type: categorical
+  metrics:
+    - identifier: total_customers
+      name: Customer Acquisition
+      description: Count of customer records for acquisition trends.
+      calculation: count
+      time: dim_customer.created_at
+      category: Marketing
+      owner_emails:
+        - marketing@acmepay.com
+      dimensions:
+        - country
+        - customer_tier
+        - registration_source
+      slices:
+        - name: US
+          filter:
+            column: country
+            operator: equals
+            expression: US
+    - identifier: registrations
+      name: Registrations
+      description: Total registrations over time.
+      calculation: count
+      time: dim_customer.created_at
+      category: Marketing
+      owner_emails:
+        - marketing@acmepay.com
+      dimensions:
+        - country
+        - registration_source
+      slices:
+        - name: US
+          filter:
+            column: country
+            operator: equals
+            expression: US
+    - identifier: activated_customers
+      name: Activated Customers
+      description: Customers marked as activated.
+      calculation: count
+      time: dim_customer.created_at
+      filters:
+        - column: is_activated
+          operator: equals
+          expression: "1"
+      category: Marketing
+      owner_emails:
+        - marketing@acmepay.com
+      dimensions:
+        - country
+        - customer_tier
+        - registration_source
+      slices:
+        - name: US
+          filter:
+            column: country
+            operator: equals
+            expression: US
+    - identifier: activation_rate
+      name: Activation Rate
+      description: Share of customers who activated.
+      calculation: custom-ratio
+      numerator_sql: "SUM(CASE WHEN dim_customer.is_activated = 1 THEN 1 END)"
+      denominator_sql: "COUNT(*)"
+      format: percentage
+      time: dim_customer.created_at
+      category: Marketing
+      owner_emails:
+        - marketing@acmepay.com
+      dimensions:
+        - country
+        - registration_source
+      slices:
+        - name: US
+          filter:
+            column: country
+            operator: equals
+            expression: US
+    - identifier: kyc_approved
+      name: KYC Approved %
+      description: Share of customers with approved KYB status.
+      calculation: custom-ratio
+      numerator_sql: "SUM(CASE WHEN dim_customer.kyb_status = 'approved' THEN 1 END)"
+      denominator_sql: "COUNT(*)"
+      format: percentage
+      time: dim_customer.created_at
+      category: Operations
+      owner_emails:
+        - ops@acmepay.com
+      dimensions:
+        - country
+        - customer_tier
+      slices:
+        - name: US
+          filter:
+            column: country
+            operator: equals
+            expression: US
+    - identifier: avg_kyb_completion_days
+      name: Avg KYC Completion Days
+      description: Average days to complete KYB from start to approval.
+      calculation: custom-value
+      sql_expression: "AVG(dim_customer.kyb_completion_days)"
+      time: dim_customer.created_at
+      category: Operations
+      owner_emails:
+        - ops@acmepay.com
+      dimensions:
+        - country
+        - customer_tier
+      slices:
+        - name: US
+          filter:
+            column: country
+            operator: equals
+            expression: US
+    - identifier: avg_time_to_activation
+      name: Avg Time to Activation (Days)
+      description: Average days from registration to activation.
+      calculation: custom-value
+      sql_expression: "AVG(dim_customer.time_to_activation_days)"
+      time: dim_customer.created_at
+      category: Operations
+      owner_emails:
+        - ops@acmepay.com
+      dimensions:
+        - country
+        - customer_tier
+      slices:
+        - name: US
+          filter:
+            column: country
+            operator: equals
+            expression: US
+  joinPaths:
+    - from:
+        column: customer_key
+      to:
+        table: dim_account
+        column: customer_id
+      type: one-to-many
+    - from:
+        column: customer_key
+      to:
+        table: fact_transactions
+        column: customer_key
+      type: one-to-many
+    - from:
+        column: customer_key
+      to:
+        table: fact_subscriptions
+        column: customer_key
+      type: one-to-many
+    - from:
+        column: customer_key
+      to:
+        table: fact_agg_arr
+        column: customer_key
+      type: one-to-many
+    - from:
+        column: customer_key
+      to:
+        table: fact_risk_events
+        column: customer_key
+      type: one-to-many
+    - from:
+        column: customer_key
+      to:
+        table: fact_customer_features
+        column: customer_key
+      type: one-to-many

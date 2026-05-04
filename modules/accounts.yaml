@@ -1,0 +1,42 @@
+module:
+  identifier: accounts
+  schema: steep_demo_v2
+  table: dim_account
+  label: Dim Accounts
+  description: Bank account dimension per customer (checking/savings, limits, balances).
+  dimensions:
+    - column: account_type
+      label: Account Type
+      type: categorical
+    - column: account_status
+      label: Account Status
+      type: categorical
+    - column: currency
+      label: Currency
+      type: categorical
+    - column: created_at
+      label: Created At
+      type: time
+    - column: balance_updated_at
+      label: Balance Updated At
+      type: time
+  metrics:
+    - identifier: avg_credit_limit
+      name: Avg Credit Limit
+      description: Average credit limit across accounts.
+      calculation: custom-value
+      sql_expression: "AVG(dim_account.credit_limit)"
+      time: dim_account.created_at
+      category: Operations
+      owner_emails:
+        - ops@acmepay.com
+      dimensions:
+        - account_type
+        - currency
+  joinPaths:
+    - from:
+        column: account_id
+      to:
+        table: fact_transactions
+        column: account_key
+      type: one-to-many

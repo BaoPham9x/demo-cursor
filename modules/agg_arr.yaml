@@ -1,0 +1,114 @@
+module:
+  identifier: agg_arr
+  schema: steep_demo_v2
+  table: fact_agg_arr
+  label: Aggregated ARR
+  description: Monthly ARR snapshot per active subscription (time series for MRR/ARR reporting).
+  dimensions:
+    - column: snapshot_date
+      label: Snapshot Date
+      type: time
+    - column: month_key
+      label: Month Key
+      type: categorical
+    - column: plan_name
+      label: Plan Name
+      type: categorical
+    - column: currency
+      label: Currency
+      type: categorical
+    - column: status
+      label: Status
+      type: categorical
+    - column: billing_cycle
+      label: Billing Cycle
+      type: categorical
+    - column: is_active
+      label: Is Active
+      type: categorical
+    - column: started_at
+      label: Started At
+      type: time
+    - column: ended_at
+      label: Ended At
+      type: time
+  metrics:
+    - identifier: mrr
+      name: MRR
+      description: Sum of monthly recurring revenue from ARR snapshots.
+      calculation: sum
+      value: fact_agg_arr.mrr
+      time: fact_agg_arr.snapshot_date
+      time_grains:
+        - monthly
+        - quarterly
+        - yearly
+      category: Commercial
+      owner_emails:
+        - finance@acmepay.com
+      dimensions:
+        - plan_name
+        - currency
+        - dim_customer.customer_tier
+      slices:
+        - name: US
+          filter:
+            column: dim_customer.country
+            operator: equals
+            expression: US
+    - identifier: total_arr
+      name: Total ARR
+      description: Sum of ARR contribution from snapshots.
+      calculation: sum
+      value: fact_agg_arr.arr_contribution
+      time: fact_agg_arr.snapshot_date
+      time_grains:
+        - monthly
+        - quarterly
+        - yearly
+      category: Commercial
+      owner_emails:
+        - finance@acmepay.com
+      dimensions:
+        - plan_name
+        - currency
+        - dim_customer.customer_tier
+      slices:
+        - name: US
+          filter:
+            column: dim_customer.country
+            operator: equals
+            expression: US
+    - identifier: active_subscriptions
+      name: Active Subscriptions (Snapshot Rows)
+      description: Count of snapshot rows (subscription-month grain).
+      calculation: count
+      time: fact_agg_arr.snapshot_date
+      time_grains:
+        - monthly
+        - quarterly
+        - yearly
+      category: Commercial
+      owner_emails:
+        - finance@acmepay.com
+      dimensions:
+        - plan_name
+        - dim_customer.customer_tier
+    - identifier: avg_arr_per_subscription
+      name: Avg ARR per Subscription
+      description: ARR contribution divided by distinct subscriptions in period.
+      calculation: custom-ratio
+      numerator_sql: "SUM(fact_agg_arr.arr_contribution)"
+      denominator_sql: "COUNT(DISTINCT fact_agg_arr.subscription_id)"
+      format: number
+      time: fact_agg_arr.snapshot_date
+      time_grains:
+        - monthly
+        - quarterly
+        - yearly
+      category: Commercial
+      owner_emails:
+        - finance@acmepay.com
+      dimensions:
+        - plan_name
+        - dim_customer.customer_tier

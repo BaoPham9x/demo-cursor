@@ -1,0 +1,13 @@
+module:
+  identifier: risk_event_types
+  schema: steep_demo_v2
+  table: dim_risk_event_type
+  label: Risk Event Types
+  description: Distinct risk event types with default severity mapping.
+  dimensions:
+    - column: event_type
+      label: Event Type
+      type: categorical
+    - column: default_severity
+      label: Default Severity
+      type: categorical
