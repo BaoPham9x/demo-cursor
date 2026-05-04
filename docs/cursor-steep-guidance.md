@@ -90,6 +90,7 @@ A fact module (e.g. `fact_transactions`) may list `dimensions: dim_customer.cust
 - Steep dimensions use a **small enum** (`categorical`, `country`, `city`, `time`, `h3-cell-index`, …). BigQuery `INT64` / `FLOAT64` are usually **metrics**, not dimensions, unless the product treats them as categorical labels (rare).
 - **Join keys** (`*_id`, `*_key`) are often **not** user-facing dimensions; sometimes they are exposed as `categorical` for power users — follow `schema.yml` `meta.is_join_key` / `dimension_type` for this repo; in new datasets, document explicitly.
 - **Sensitive fields** (email, name, lat/long): respect `business-context.md` deny list even if the column exists in SQL.
+- **Descriptions:** dbt model/column **`description`** in `schema.yml` should document **the data** (meaning, grain, caveats) for any reader—including experiments where Cursor builds a semantic layer from **plain dbt** without leaning on Steep. Do **not** fill dbt descriptions with Steep product language. Steep-as-code may set **`dimensions[].description`** in YAML by **verbatim copy** of that dbt column text when you export the column; Steep-only semantics live under **`meta.steep`** and in `modules/*.yaml`, not in dbt docs.
 
 **Bias guard:** Do not turn every string column into a dimension; do not expose PII because “it’s in the star schema”.
 

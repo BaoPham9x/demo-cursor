@@ -1,6 +1,11 @@
-# Enriched semantic metadata for Steep-as-code generation (read by Cursor skill).
+# Enriched metadata for Steep-as-code generation (read by Cursor skill).
 # Distilled from demo-data-generator data-generation/models/fintech/*.ts and modules/*.yaml.
 # BigQuery dataset placeholder: steep_demo_v2 (replace in generated YAML if your dataset differs).
+#
+# Column and model `description` fields are dbt documentation (business / warehouse meaning only).
+# Steep wiring (module id, joins, reference metrics, dimension_type for codegen) lives under `meta.steep`
+# and column `meta.*` — keep those separate so dbt docs stay fair for non-Steep readers and for
+# experiments where Cursor infers a semantic layer from plain dbt + SQL.
 
 version: 2
 
@@ -100,35 +105,49 @@ models:
       - name: email
         meta: { dimension_type: categorical, sensitive: true }
       - name: country
+        description: Customer country for reporting (ISO-style codes in demo data).
         meta: { dimension_type: country, example_values: ["US", "GB", "NL", "SE", "ES"] }
       - name: city
+        description: City associated with the customer record.
         meta: { dimension_type: city }
       - name: region
+        description: Commercial region bucket (e.g. Europe vs North America).
         meta: { dimension_type: categorical, example_values: ["Europe", "North America"] }
       - name: timezone
+        description: Customer-facing timezone label for scheduling and support routing.
         meta: { dimension_type: categorical }
       - name: registration_source
+        description: Acquisition channel at signup (paid social, organic, etc.).
         meta: { dimension_type: categorical, example_values: ["google", "meta", "organic"] }
       - name: kyb_status
+        description: Know-your-business workflow state for the customer.
         meta: { dimension_type: categorical, example_values: ["approved", "not_started", "pending"] }
       - name: customer_tier
+        description: Commercial tier (pricing and entitlements).
         meta: { dimension_type: categorical, example_values: ["free", "starter", "pro", "enterprise"] }
       - name: account_status
+        description: Overall customer account standing (active vs suspended).
         meta: { dimension_type: categorical, example_values: ["active", "suspended"] }
       - name: risk_score
-        description: Numeric risk score 0-1000 (metric candidate, not a Steep dimension).
+        description: Numeric risk score 0–1000 for underwriting and monitoring; exposed as a measure, not a categorical slice in this mart.
         meta: { dimension_type: none, unit: score_0_1000 }
       - name: created_at
+        description: Timestamp when the customer dimension row was created; use for cohort and registration-over-time analysis.
         meta: { dimension_type: time }
       - name: kyb_started_at
+        description: When the customer began the KYB process.
         meta: { dimension_type: time }
       - name: kyb_submitted_at
+        description: When KYB documentation was submitted for review.
         meta: { dimension_type: time }
       - name: kyb_approved_at
+        description: When KYB was approved (operations SLA tracking).
         meta: { dimension_type: time }
       - name: activated_at
+        description: When the customer first reached activated product state.
         meta: { dimension_type: time }
       - name: is_activated
+        description: Boolean flag (0/1) for product activation.
         meta: { dimension_type: categorical, example_values: ["0", "1"] }
       - name: kyb_completion_days
         meta: { dimension_type: none, unit: days }
@@ -164,10 +183,13 @@ models:
       - name: customer_id
         meta: { dimension_type: none, is_join_key: true }
       - name: account_type
+        description: Product type of the bank account (checking vs savings).
         meta: { dimension_type: categorical, example_values: ["checking", "savings"] }
       - name: account_status
+        description: Lifecycle status of the account dimension row.
         meta: { dimension_type: categorical }
       - name: currency
+        description: Account reporting currency (USD in demo).
         meta: { dimension_type: categorical, example_values: ["USD"] }
       - name: credit_limit
         meta: { dimension_type: none, unit: currency_amount }
@@ -176,8 +198,10 @@ models:
       - name: current_balance
         meta: { dimension_type: none, unit: currency_amount }
       - name: created_at
+        description: Timestamp when the bank account record was created.
         meta: { dimension_type: time }
       - name: balance_updated_at
+        description: Last balance refresh timestamp for the account.
         meta: { dimension_type: time }
 
   - name: dim_merchant
@@ -193,8 +217,10 @@ models:
       - name: merchant_key
         meta: { dimension_type: none, is_join_key: true }
       - name: merchant_name
+        description: Display name of the merchant counterparty.
         meta: { dimension_type: categorical }
       - name: merchant_category
+        description: Merchant industry or spend category bucket.
         meta: { dimension_type: categorical, example_values: ["healthcare", "other", "internal"] }
 
   - name: dim_risk_event_type
@@ -209,8 +235,10 @@ models:
       - name: risk_event_type_key
         meta: { dimension_type: none, is_join_key: true }
       - name: event_type
+        description: Canonical risk/compliance event type label.
         meta: { dimension_type: categorical, example_values: ["fraud_alert", "aml_flag", "suspicious_activity", "velocity_check"] }
       - name: default_severity
+        description: Default severity mapped to this event type for triage rules.
         meta: { dimension_type: categorical, example_values: ["critical", "high", "medium", "low"] }
 
   - name: dim_date
@@ -226,6 +254,7 @@ models:
       - name: date_key
         meta: { dimension_type: none, is_join_key: true }
       - name: date
+        description: Calendar date at day grain for this spine row.
         meta: { dimension_type: time }
       - name: year
         meta: { dimension_type: none }
@@ -234,16 +263,20 @@ models:
       - name: month
         meta: { dimension_type: none }
       - name: month_name
+        description: Human-readable calendar month name.
         meta: { dimension_type: categorical }
       - name: week
         meta: { dimension_type: none }
       - name: day_of_week
         meta: { dimension_type: none }
       - name: day_name
+        description: Weekday name for the calendar row.
         meta: { dimension_type: categorical }
       - name: is_weekend
+        description: Flag (0/1) for weekend vs weekday.
         meta: { dimension_type: categorical, example_values: ["0", "1"] }
       - name: is_month_end
+        description: Flag (0/1) for month-end reporting windows.
         meta: { dimension_type: categorical, example_values: ["0", "1"] }
 
   - name: fact_transactions
@@ -333,26 +366,35 @@ models:
       - name: merchant_key
         meta: { dimension_type: categorical, is_join_key: true }
       - name: merchant_name
+        description: Merchant display name denormalized on the transaction row.
         meta: { dimension_type: categorical }
       - name: merchant_category
+        description: Merchant category denormalized from the merchant reference onto each transaction row.
         meta: { dimension_type: categorical }
       - name: transaction_type
+        description: Movement type (card spend, ACH, transfer, etc.).
         meta: { dimension_type: categorical, example_values: ["card_spend", "payment", "deposit", "withdrawal", "transfer"] }
       - name: status
+        description: Processing outcome of the money movement.
         meta: { dimension_type: categorical, example_values: ["completed", "pending", "failed", "reversed"] }
       - name: amount
         meta: { dimension_type: none, unit: currency_amount }
       - name: currency
+        description: Transaction currency code.
         meta: { dimension_type: categorical }
       - name: fee_amount
         meta: { dimension_type: none, unit: currency_amount }
       - name: payment_method
+        description: Rail used to move funds (card, wallet, bank transfer, ACH).
         meta: { dimension_type: categorical, example_values: ["card", "wallet", "bank_transfer", "ach"] }
       - name: risk_flag
+        description: Risk/compliance flag on the transaction for fraud and ops monitoring.
         meta: { dimension_type: categorical, example_values: ["normal", "high_risk", "suspicious", "aml_review"] }
       - name: country
+        description: Country where the transaction was captured or attributed.
         meta: { dimension_type: country }
       - name: city
+        description: City associated with the transaction for geography reporting (mart uses non-PII location grain).
         meta: { dimension_type: city }
       - name: latitude
         meta: { dimension_type: none, sensitive: true }
@@ -367,6 +409,7 @@ models:
       - name: h3_res_4
         meta: { dimension_type: h3-cell-index }
       - name: h3_res_5
+        description: H3 cell index at resolution 5 for spatial aggregation without lat/long.
         meta: { dimension_type: h3-cell-index }
       - name: h3_res_6
         meta: { dimension_type: h3-cell-index }
@@ -379,8 +422,10 @@ models:
       - name: h3_res_10
         meta: { dimension_type: h3-cell-index }
       - name: location_key
+        description: Opaque location bucket key for joins to a location dimension if present.
         meta: { dimension_type: categorical }
       - name: created_at
+        description: Event timestamp when the transaction was recorded (primary business time for this fact).
         meta: { dimension_type: time }
 
   - name: fact_subscriptions
@@ -411,28 +456,37 @@ models:
       - name: customer_key
         meta: { dimension_type: none, is_join_key: true }
       - name: plan_name
+        description: Commercial plan on the subscription row.
         meta: { dimension_type: categorical, example_values: ["free", "starter", "pro", "enterprise"] }
       - name: monthly_price
         meta: { dimension_type: none, unit: currency_amount }
       - name: currency
+        description: Subscription currency.
         meta: { dimension_type: categorical }
       - name: status
+        description: Subscription lifecycle state (active, trialing, cancelled, etc.).
         meta: { dimension_type: categorical, example_values: ["active", "trialing", "past_due", "cancelled"] }
       - name: billing_cycle
+        description: Billing frequency for the subscription.
         meta: { dimension_type: categorical, example_values: ["monthly", "annual"] }
       - name: billing_paused_at
+        description: When billing was paused if applicable.
         meta: { dimension_type: time }
       - name: suspended_at
+        description: When the subscription entered a suspended state.
         meta: { dimension_type: time }
       - name: mrr
         meta: { dimension_type: none, unit: currency_amount }
       - name: arr
         meta: { dimension_type: none, unit: currency_amount }
       - name: started_at
+        description: When the subscription line becomes effective; primary time for subscription lifecycle metrics on this fact.
         meta: { dimension_type: time }
       - name: ended_at
+        description: Subscription end when cancelled or churned.
         meta: { dimension_type: time }
       - name: created_at
+        description: Row creation time for the subscription fact.
         meta: { dimension_type: time }
 
   - name: fact_agg_arr
@@ -477,8 +531,10 @@ models:
             category: Commercial
     columns:
       - name: snapshot_date
+        description: Month-end or snapshot as-of date for ARR reporting grain.
         meta: { dimension_type: time }
       - name: month_key
+        description: Surrogate month key for joins to calendar if used.
         meta: { dimension_type: categorical }
       - name: year
         meta: { dimension_type: none }
@@ -491,14 +547,18 @@ models:
       - name: customer_key
         meta: { dimension_type: none, is_join_key: true }
       - name: plan_name
+        description: Plan on the subscription as of the snapshot row.
         meta: { dimension_type: categorical }
       - name: monthly_price
         meta: { dimension_type: none }
       - name: currency
+        description: Currency on the snapshot row.
         meta: { dimension_type: categorical }
       - name: status
+        description: Subscription status at snapshot time.
         meta: { dimension_type: categorical }
       - name: billing_cycle
+        description: Billing cycle at snapshot time.
         meta: { dimension_type: categorical }
       - name: mrr
         meta: { dimension_type: none, unit: currency_amount }
@@ -509,10 +569,13 @@ models:
       - name: arr_contribution
         meta: { dimension_type: none, unit: currency_amount }
       - name: is_active
+        description: Whether the subscription was active for this snapshot (0/1).
         meta: { dimension_type: categorical, example_values: ["0", "1"] }
       - name: started_at
+        description: Subscription start on the snapshot row.
         meta: { dimension_type: time }
       - name: ended_at
+        description: Subscription end on the snapshot row if set.
         meta: { dimension_type: time }
 
   - name: fact_visitors
@@ -548,16 +611,21 @@ models:
             category: Marketing
     columns:
       - name: visitor_date
+        description: Reporting date for the pre-aggregated visitor metrics row.
         meta: { dimension_type: time }
       - name: date_key
         meta: { dimension_type: none, is_join_key: true }
       - name: network
+        description: Paid or organic acquisition network (e.g. Google, Meta).
         meta: { dimension_type: categorical, example_values: ["google", "meta", "youtube", "organic"] }
       - name: channel
+        description: Campaign channel type (video, brand, search).
         meta: { dimension_type: categorical, example_values: ["video", "brand", "search"] }
       - name: country
+        description: Country for the traffic aggregate.
         meta: { dimension_type: country }
       - name: campaign_name
+        description: Marketing campaign label for the aggregate row.
         meta: { dimension_type: categorical }
       - name: visitor_key
         meta: { dimension_type: categorical, is_join_key: true }
@@ -612,20 +680,26 @@ models:
       - name: ad_spend_id
         meta: { dimension_type: none, is_join_key: true }
       - name: network
+        description: Ad network for the spend row (joins to visitor aggregates by visitor_key).
         meta: { dimension_type: categorical }
       - name: channel
+        description: Channel for the ad spend row.
         meta: { dimension_type: categorical }
       - name: campaign_name
+        description: Campaign name on the spend row.
         meta: { dimension_type: categorical }
       - name: country
+        description: Country attributed to the spend row.
         meta: { dimension_type: country }
       - name: currency
+        description: Spend currency.
         meta: { dimension_type: categorical }
       - name: amount
         meta: { dimension_type: none, unit: currency_amount }
       - name: conversions
         meta: { dimension_type: none }
       - name: created_at
+        description: Timestamp of the ad spend event or reporting row (primary time for this fact).
         meta: { dimension_type: time }
       - name: visitor_key
         meta: { dimension_type: categorical, is_join_key: true }
@@ -694,20 +768,27 @@ models:
       - name: account_key
         meta: { dimension_type: none, is_join_key: true }
       - name: risk_event_type_key
+        description: Foreign key to dim_risk_event_type (also denormalized event labels may exist).
         meta: { dimension_type: categorical, is_join_key: true }
       - name: event_type
+        description: Event type label on the risk fact row.
         meta: { dimension_type: categorical }
       - name: severity
+        description: Case severity for triage and SLA reporting.
         meta: { dimension_type: categorical, example_values: ["critical", "high", "medium", "low"] }
       - name: status
+        description: Case workflow status (open through resolved).
         meta: { dimension_type: categorical, example_values: ["open", "investigating", "resolved", "false_positive"] }
       - name: created_at
+        description: When the risk or compliance case was opened or first detected.
         meta: { dimension_type: time }
       - name: resolved_at
+        description: When the risk event was resolved or closed.
         meta: { dimension_type: time }
       - name: resolution_time_hours
         meta: { dimension_type: none, unit: hours }
       - name: description
+        description: Free-text case notes (treat as sensitive in some deployments).
         meta: { dimension_type: categorical }
 
   - name: fact_customer_features
@@ -743,12 +824,17 @@ models:
       - name: customer_key
         meta: { dimension_type: none, is_join_key: true }
       - name: feature_name
+        description: Product feature identifier for adoption reporting.
         meta: { dimension_type: categorical }
       - name: feature_category
+        description: Feature grouping (accounting, receipts, payments).
         meta: { dimension_type: categorical, example_values: ["accounting", "receipts", "payments"] }
       - name: is_active
+        description: Whether the feature flag is on for the customer (true/false strings in demo).
         meta: { dimension_type: categorical, example_values: ["true", "false"] }
       - name: activated_at
+        description: When the customer first enabled or activated this product feature.
         meta: { dimension_type: time }
       - name: last_used_at
+        description: Last observed usage time for the feature.
         meta: { dimension_type: time }

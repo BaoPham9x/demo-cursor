@@ -45,7 +45,9 @@ Open **[business-context.md](business-context.md)** before you ask Cursor to gen
 
 ## 2. Ground truth for Cursor (keep it simple)
 
-**Default — no BigQuery MCP:** everything comes from **[`star-schema/models/marts/schema.yml`](star-schema/models/marts/schema.yml)** — column names, join graph, `example_values` for filters/slices, metric recipes, and descriptions. Optional: mart **SQL** under [`star-schema/models/marts/`](star-schema/models/marts/) if you need exact `SELECT` lists.
+**Default — no BigQuery MCP:** everything comes from **[`star-schema/models/marts/schema.yml`](star-schema/models/marts/schema.yml)** — column names, join graph, `example_values` for filters/slices, metric recipes, and **model/column descriptions**. Optional: mart **SQL** under [`star-schema/models/marts/`](star-schema/models/marts/) if you need exact `SELECT` lists.
+
+**dbt docs vs Steep contract:** In `schema.yml`, **model and column `description`** fields should stay **business and warehouse meaning** (grain, definitions, caveats)—the same text you would show in dbt docs to someone who never uses Steep. **Do not** paste Steep product jargon or UI-only explanations there. Steep-specific wiring (module ids, join graph, `dimension_type` for codegen helpers, reference metric recipes) belongs under **`meta.steep`** and in generated **`modules/*.yaml`**, not in dbt descriptions. When Steep YAML lists a `dimensions[].description`, copy **only** that neutral dbt column `description` verbatim (or leave the Steep field empty if unset). To **test Cursor on “plain dbt”**, ask for a semantic layer from **mart SQL + standard `schema.yml` descriptions** and say to **ignore or omit `meta.steep`** in that run—harder and less deterministic than this template, but a fair experiment.
 
 **Optional — BigQuery MCP:** use MCP to list tables, inspect types, or preview rows. Still treat **`schema.yml`** as the semantic contract (Steep module ids, join paths, reference metrics) so YAML matches this demo’s intent. MCP replaces ad-hoc row peeking; you do **not** need extra CSVs in this repo.
 
@@ -130,6 +132,12 @@ See [Cursor MCP](https://docs.cursor.com/context/mcp) if tools do not appear. Au
 ### Git branch for `modules/` (create, commit, **push**)
 
 When generating Steep-as-code YAML, follow [AGENTS.md](AGENTS.md) / the bundled skill: **create a feature branch before editing `modules/`**, then **commit** the new or changed `*.yaml` files. **Push that branch to the remote** (for example `git push -u origin steep/your-topic`) as part of the same flow. A branch that only exists locally does **not** show up on GitHub/GitLab or in teammates’ clones, and Steep **Define in Code** sync expects a branch on the host you connected. If you skip the push, you will not see the branch on the remote until you run it yourself.
+
+### Removing the semantic layer (Steep + Git)
+
+When you intend to **delete the whole Steep-as-code semantic layer** from the repo (for example clearing `modules/*.yaml` before a fresh generation), **leave exactly one metric** in YAML on purpose for the last sync. That makes the change obviously deliberate—an empty tree can look like an accident or a bad sync. After reviewers agree the layer is gone, **remove that last metric manually** (follow-up commit or delete in the Steep app), depending on how you manage the workspace.
+
+**Disconnecting GitHub from Steep** (turning off the integration or unlinking the repo) **does not delete** metrics, modules, or definitions that already live in Steep. They remain until you remove or replace them inside Steep or via a later sync that actually deletes content per [Steep Define in Code](https://help.steep.app/setup-and-manage/define-in-code) behavior.
 
 ---
 

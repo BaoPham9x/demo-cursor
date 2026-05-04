@@ -105,6 +105,7 @@ module:
 - Skip columns in the deny list from `business-context.md`.
 - Skip `meta.dimension_type: none` unless `schema.yml` marks a key as intentionally exposed for slicing.
 - For surrogate keys, follow `schema.yml` (`dimension_type` + `is_join_key`).
+- Optionally set **`dimensions[].description`** in Steep YAML by **verbatim copy** of the column’s dbt **`description`** in `schema.yml` when it exists. Those dbt strings must stay **business/warehouse documentation only** (no Steep jargon). Add missing text in `schema.yml` as data docs, not as Steep help. If the user requests **plain-dbt generation**, infer joins and metrics from SQL + dbt descriptions and **do not require `meta.steep`**.
 
 **Metric rules:**
 
@@ -121,7 +122,7 @@ Before returning to the user, re-read each written YAML and check against [yaml-
 
 ## Step 6 — Present
 
-Summarize files written, metric count per module, join paths added, and any columns skipped due to the deny list. **Always include the git branch name** (from Step 2b) and remind the user to test Steep sync on that branch before merging the PR to `main`.
+Summarize files written, metric count per module, join paths added, any columns skipped due to the deny list, and whether **`dimensions[].description`** was copied from dbt column docs only (or omitted for plain-dbt runs). **Always include the git branch name** (from Step 2b) and remind the user to test Steep sync on that branch before merging the PR to `main`.
 
 ## Important rules
 
