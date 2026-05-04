@@ -60,6 +60,8 @@ For each target mart model, read:
 
 ## Step 4 — Compose each `modules/<module_identifier>.yaml`
 
+**Module root keys:** `identifier`, `schema`, `table`, `label`, `description`, `dimensions`, `metrics`, `joinPaths` only — no `slices` or `filters` at module level (Steep rejects them); put `filters` / `slices` on metrics per [yaml-schema-reference.md](references/yaml-schema-reference.md) and Steep Code Reference.
+
 ```yaml
 module:
   identifier: <meta.steep.module_identifier>

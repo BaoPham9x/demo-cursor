@@ -119,6 +119,7 @@ Use **`count-distinct`** with explicit `distinct_on` when the question is “how
 
 - **`filters`:** `operator` and `expression` must match [Code Reference](https://help.steep.app/setup-and-manage/code-reference). For `in`, use comma-separated values **without spaces** unless the product docs say otherwise.
 - **`slices`:** named saved filters; same literal rules as filters.
+- **Where they go:** In Steep-as-code sync, `filters` and `slices` belong on **metrics**, not on the `module` root. A `module` with top-level `slices` fails validation (“Unrecognized key — slices”). Our [yaml-schema-reference.md](../.cursor/skills/generate-steep-modules/references/yaml-schema-reference.md) lists allowed `module` keys explicitly.
 - Filter values must appear in `schema.yml` `example_values` or be user-supplied — **no invented enums**.
 
 ---

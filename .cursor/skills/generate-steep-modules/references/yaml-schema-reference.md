@@ -24,6 +24,8 @@ module:
   joinPaths: []             # Optional. Array of JoinPath objects.
 ```
 
+**Strict module shape (Steep sync):** Under `module`, only the keys above are valid. Do **not** put `filters`, `slices`, or other metric-only fields on `module` — Steep reports them as unrecognized keys (for example `slices` on `transactions.yaml`). Put `filters` / `slices` on individual **metrics** when the product supports them; confirm in [Steep Code Reference](https://help.steep.app/setup-and-manage/code-reference) if unsure.
+
 ---
 
 ## Dimension

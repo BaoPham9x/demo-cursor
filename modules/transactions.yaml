@@ -247,9 +247,3 @@ module:
         table: fact_risk_events
         column: transaction_id
       type: one-to-many
-  slices:
-    - name: US
-      filter:
-        column: country
-        operator: equals
-        expression: US
