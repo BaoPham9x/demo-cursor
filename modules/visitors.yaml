@@ -63,10 +63,3 @@ module:
         table: fact_ad_spend
         column: visitor_key
       type: one-to-many
-    - from:
-        column: date_key
-      to:
-        schema: steep_demo_v2
-        table: dim_date
-        column: date_key
-      type: one-to-one

@@ -44,3 +44,10 @@ module:
         table: fact_transactions
         column: account_key
       type: one-to-many
+    - from:
+        column: account_key
+      to:
+        schema: steep_demo_v2
+        table: fact_risk_events
+        column: account_key
+      type: one-to-many

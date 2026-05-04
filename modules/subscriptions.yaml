@@ -94,11 +94,3 @@ module:
       dimensions:
         - plan_name
         - billing_cycle
-  joinPaths:
-    - from:
-        column: customer_key
-      to:
-        schema: steep_demo_v2
-        table: dim_customer
-        column: customer_key
-      type: one-to-one

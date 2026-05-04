@@ -11,3 +11,11 @@ module:
     - column: merchant_category
       label: Merchant category
       type: categorical
+  joinPaths:
+    - from:
+        column: merchant_key
+      to:
+        schema: steep_demo_v2
+        table: fact_transactions
+        column: merchant_key
+      type: one-to-many

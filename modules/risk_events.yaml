@@ -137,30 +137,9 @@ module:
         - event_type
   joinPaths:
     - from:
-        column: customer_key
-      to:
-        schema: steep_demo_v2
-        table: dim_customer
-        column: customer_key
-      type: one-to-one
-    - from:
         column: transaction_id
       to:
         schema: steep_demo_v2
         table: fact_transactions
         column: transaction_id
-      type: one-to-one
-    - from:
-        column: account_key
-      to:
-        schema: steep_demo_v2
-        table: dim_account
-        column: account_key
-      type: one-to-one
-    - from:
-        column: risk_event_type_key
-      to:
-        schema: steep_demo_v2
-        table: dim_risk_event_type
-        column: risk_event_type_key
       type: one-to-one

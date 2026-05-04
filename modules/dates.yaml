@@ -20,3 +20,11 @@ module:
     - column: is_month_end
       label: Is month end
       type: categorical
+  joinPaths:
+    - from:
+        column: date_key
+      to:
+        schema: steep_demo_v2
+        table: fact_visitors
+        column: date_key
+      type: one-to-many
