@@ -74,7 +74,7 @@ metrics:
 ```yaml
 metrics:
   - identifier: avg_kyb_completion_days
-    name: Avg KYC Completion Days
+    name: Avg KYB Completion Days
     calculation: custom-value
     sql_expression: "AVG(dim_customer.kyb_completion_days)"
     time: dim_customer.created_at
