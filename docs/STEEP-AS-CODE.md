@@ -21,7 +21,8 @@ If you still need this fallback checklist, **`@` this file** (`docs/STEEP-AS-COD
 - Use `schema` and `table` from `meta.steep.target_schema` and `meta.steep.target_table` in `schema.yml` (default dataset: `steep_demo_v2`).
 - Map `meta.steep.join_paths` with the direction rules in [cursor-steep-guidance.md](cursor-steep-guidance.md): declare `one-to-many` paths from the parent/grain-owner module when a dimension row reaches many fact rows, and use `one-to-one` only when one row on the declaring module reaches at most one target row. Do not copy `many-to-one` into Steep YAML.
 - Use `meta.steep.default_time_column` for every metric's `time:` field as `fact_table.column` (e.g. `fact_transactions.created_at`).
-- Dimensions: include columns where `meta.dimension_type` is not `none`, except `is_join_key: true` (treat join keys like `customer_key` on facts as join keys, not filter dimensions, unless `schema.yml` intentionally exposes them).
+- Dimensions: include columns where `meta.dimension_type` is not `none`, except `is_join_key: true` (treat join keys like `customer_key` on facts as join keys, not filter dimensions, unless `schema.yml` intentionally exposes them). Copy `dimensions[].description` verbatim from dbt column descriptions when present.
+- Metrics: include a clear business `description` and a relevant non-empty `dimensions` list on every metric. Pick useful slices from the questionnaire defaults plus local/joined dimensions in `schema.yml`; do not use IDs, join keys, sensitive fields, lat/long, or free-text notes.
 - Apply the deny list from `business-context.md` section 3: never add those columns to `dimensions` on metrics.
 - Metric identifiers must be unique across all modules in the workspace.
 

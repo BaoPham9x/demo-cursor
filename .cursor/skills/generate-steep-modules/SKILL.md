@@ -89,12 +89,16 @@ module:
   dimensions:
     - column: <col>
       label: <Human label>
+      description: <verbatim dbt column description when present>
       type: <categorical|city|country|h3-cell-index|time>
   metrics:
     - identifier: <unique>
       name: <string>
+      description: <one sentence: business meaning, calculation grain, important filter if any>
       calculation: ...
       time: <table>.<default_time_column>
+      dimensions:
+        - <focused dimension column>
       ...
   joinPaths: ...
 ```
@@ -105,12 +109,15 @@ module:
 - Skip columns in the deny list from `business-context.md`.
 - Skip `meta.dimension_type: none` unless `schema.yml` marks a key as intentionally exposed for slicing.
 - For surrogate keys, follow `schema.yml` (`dimension_type` + `is_join_key`).
-- Optionally set **`dimensions[].description`** in Steep YAML by **verbatim copy** of the column’s dbt **`description`** in `schema.yml` when it exists. Those dbt strings must stay **business/warehouse documentation only** (no Steep jargon). Add missing text in `schema.yml` as data docs, not as Steep help. If the user requests **plain-dbt generation**, infer joins and metrics from SQL + dbt descriptions and **do not require `meta.steep`**.
+- Set **`dimensions[].description`** in Steep YAML whenever the column has a dbt **`description`** in `schema.yml`; copy that text **verbatim**. This is especially useful for tricky dimensions such as country codes, H3 cells, lifecycle statuses, and denormalized merchant/category fields. If a dimension lacks dbt description, do not invent Steep-specific help text; either omit the dimension description or, if the user asked to improve dbt docs, add a neutral data description in `schema.yml` first.
 
 **Metric rules:**
 
 - Every metric needs `time:` as `<physical_table_name>.<default_time_column>` where `physical_table_name` equals `target_table` (e.g. `fact_transactions.created_at`).
 - Prefer `reference_metrics` from `schema.yml` when they match the user's ask.
+- Every metric needs a **`description:`**. Write one concise business sentence that explains what the metric measures, the grain/counting logic, and any important filter (for example “completed transactions only” or “monthly active subscription snapshot”). Do not leave metric descriptions blank and do not use marketing copy.
+- Every metric needs a **non-empty `dimensions:` list** with relevant slice columns. Pick a focused list that helps answer the business question: start with applicable defaults from `business-context.md` (`country`, `customer_tier`, `plan_name`, `transaction_type`), add obvious local slices from `schema.yml` (`status`, `payment_method`, `merchant_category`, `risk_flag`, `network`, `channel`, etc.), and include joined dimensions only when the join graph supports them. Do **not** use join keys, sensitive fields, raw IDs, lat/long, or huge free-text fields as metric dimensions.
+- Prefer explicit dimension lists over `"this.*"` for demo readability. `"this.*"` is acceptable only for quick internal experiments, not for sales/demo output.
 - Use [metric-patterns.md](references/metric-patterns.md) for structure (`filters`, **`slices`** on the metric, `custom-ratio`, `time_grains`). Default slices from `business-context.md` section 3 belong **on metrics**, duplicated per metric when several should expose the same named slice.
 - Set `category` and `owner_emails` from the active team in `business-context.md` when applicable.
 
@@ -118,11 +125,11 @@ module:
 
 ## Step 5 — Validate
 
-Before returning to the user, re-read each written YAML and check against [yaml-schema-reference.md](references/yaml-schema-reference.md): allowed keys, calculation variants, filter operators, joinPath shape.
+Before returning to the user, re-read each written YAML and check against [yaml-schema-reference.md](references/yaml-schema-reference.md): allowed keys, calculation variants, filter operators, joinPath shape, **every metric has `description`**, and **every metric has a relevant non-empty `dimensions` list**.
 
 ## Step 6 — Present
 
-Summarize files written, metric count per module, join paths added, any columns skipped due to the deny list, and whether **`dimensions[].description`** was copied from dbt column docs only (or omitted for plain-dbt runs). **Always include the git branch name** (from Step 2b) and remind the user to test Steep sync on that branch before merging the PR to `main`.
+Summarize files written, metric count per module, join paths added, how metric dimensions were selected, any columns skipped due to the deny list, and whether **`dimensions[].description`** was copied from dbt column docs only (or omitted for plain-dbt runs). **Always include the git branch name** (from Step 2b) and remind the user to test Steep sync on that branch before merging the PR to `main`.
 
 ## Important rules
 

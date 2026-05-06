@@ -90,7 +90,7 @@ A fact module (e.g. `fact_transactions`) may list `dimensions: dim_customer.cust
 - Steep dimensions use a **small enum** (`categorical`, `country`, `city`, `time`, `h3-cell-index`, …). BigQuery `INT64` / `FLOAT64` are usually **metrics**, not dimensions, unless the product treats them as categorical labels (rare).
 - **Join keys** (`*_id`, `*_key`) are often **not** user-facing dimensions; sometimes they are exposed as `categorical` for power users — follow `schema.yml` `meta.is_join_key` / `dimension_type` for this repo; in new datasets, document explicitly.
 - **Sensitive fields** (email, name, lat/long): respect `business-context.md` deny list even if the column exists in SQL.
-- **Descriptions:** dbt model/column **`description`** in `schema.yml` should document **the data** (meaning, grain, caveats) for any reader—including experiments where Cursor builds a semantic layer from **plain dbt** without leaning on Steep. Do **not** fill dbt descriptions with Steep product language. Steep-as-code may set **`dimensions[].description`** in YAML by **verbatim copy** of that dbt column text when you export the column; Steep-only semantics live under **`meta.steep`** and in `modules/*.yaml`, not in dbt docs.
+- **Dimension descriptions:** dbt model/column **`description`** in `schema.yml` should document **the data** (meaning, grain, caveats) for any reader—including experiments where Cursor builds a semantic layer from **plain dbt** without leaning on Steep. Do **not** fill dbt descriptions with Steep product language. Steep-as-code should set **`dimensions[].description`** in YAML by **verbatim copy** of the dbt column text whenever that text exists; this is especially valuable for country codes, H3 cells, lifecycle statuses, and denormalized categories. Steep-only semantics live under **`meta.steep`** and in `modules/*.yaml`, not in dbt docs.
 
 **Bias guard:** Do not turn every string column into a dimension; do not expose PII because “it’s in the star schema”.
 
@@ -122,6 +122,13 @@ Use **`count-distinct`** with explicit `distinct_on` when the question is “how
 - **`slices`:** named saved filters; same literal rules as filters.
 - **Where they go:** In Steep-as-code sync, `filters` and `slices` belong on **metrics**, not on the `module` root. A `module` with top-level `slices` fails validation (“Unrecognized key — slices”). Our [yaml-schema-reference.md](../.cursor/skills/generate-steep-modules/references/yaml-schema-reference.md) lists allowed `module` keys explicitly.
 - Filter values must appear in `schema.yml` `example_values` or be user-supplied — **no invented enums**.
+
+### 6.6 Metric descriptions and metric dimensions
+
+- Every generated metric must include a **`description`**. Keep it one clear business sentence: what is measured, the grain/counting logic, and important filters such as “completed only,” “active snapshot,” or “open/investigating cases.”
+- Every generated metric must include a **non-empty `dimensions` list**. Pick relevant slices for the question, not every possible column: start from `business-context.md` defaults, add obvious local dimensions from `schema.yml`, and include cross-module dimensions only when join paths exist.
+- Prefer explicit dimensions over `"this.*"` for client demos because the user can see exactly why the metric is useful. Avoid join keys, IDs, sensitive fields, lat/long, and free-text notes.
+- Good metric dimensions should answer “by what would a business user naturally slice this?” For example: revenue by `country`, `transaction_type`, `payment_method`, `merchant_category`; ARR by `plan_name`, `billing_cycle`, `customer_tier`; risk events by `severity`, `status`, `event_type`, `country`.
 
 ---
 
