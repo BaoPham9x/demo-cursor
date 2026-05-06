@@ -1,0 +1,10 @@
+demo_fintech:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: oauth
+      project: steep-demo
+      dataset: steep_demo_v2
+      threads: 4
+      location: US

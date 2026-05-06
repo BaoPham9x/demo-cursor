@@ -1,0 +1,50 @@
+module:
+  identifier: customers
+  schema: steep_demo_v2
+  table: dim_customer
+  label: Dim Customer
+  description: Customer dimension (SMB neobank). Includes KYB lifecycle, activation, tier, and derived fields is_activated, kyb_completion_days, time_to_activation_days.
+  dimensions:
+    - column: country
+      label: Country
+      type: country
+    - column: region
+      label: Region
+      type: categorical
+    - column: registration_source
+      label: Registration Source
+      type: categorical
+    - column: customer_tier
+      label: Customer Tier
+      type: categorical
+    - column: account_status
+      label: Account Status
+      type: categorical
+    - column: created_at
+      label: Created At
+      type: time
+  metrics:
+    - identifier: total_customers
+      name: Customer Acquisition
+      calculation: count
+      time: dim_customer.created_at
+      category: Commercial
+      owner_emails:
+        - finance@acmepay.com
+      dimensions:
+        - country
+        - customer_tier
+        - registration_source
+  joinPaths:
+    - from:
+        column: customer_key
+      to:
+        table: fact_transactions
+        column: customer_key
+      type: one-to-many
+    - from:
+        column: customer_key
+      to:
+        table: fact_agg_arr
+        column: customer_key
+      type: one-to-many

@@ -4,6 +4,12 @@ Sales-friendly Cursor workspace: generate **Steep-as-code** YAML (`modules/*.yam
 
 **Handoff:** This repo is a **template** — the bundled skill and YAML reference are **portable**; the mart names, join graph, and questionnaire content are **examples** until you replace them.
 
+## Two demo modes
+
+**Enriched deterministic demo (recommended for sales):** Cursor reads the pre-filled questionnaire plus enriched dbt metadata in [`star-schema/models/marts/schema.yml`](star-schema/models/marts/schema.yml): table shape, column docs, Steep module targets, join hints, safe dimension types, `example_values`, and reference metric recipes. This is the fast, precise path that shows how a team can encode business intent next to dbt and generate Steep-as-code reliably.
+
+**Plain-dbt challenge mode:** Ask Cursor to ignore `meta.steep` and infer from mart SQL plus standard dbt descriptions only. This is useful for proving what is possible from a normal dbt project, but it is intentionally less deterministic: the assistant must infer joins, metric grains, filter values, and safe dimensions instead of reading an explicit semantic contract.
+
 ---
 
 ## New chat in Cursor — one attachment
@@ -25,7 +31,7 @@ Sales-friendly Cursor workspace: generate **Steep-as-code** YAML (`modules/*.yam
 
 **If the assistant seems lost:** add **`@docs/STEEP-AS-CODE.md`** once, or write *“Follow AGENTS.md and docs/cursor-steep-guidance.md for this repo.”*
 
-**Repo index (browse anytime):** [AGENTS.md](AGENTS.md) · **[docs/cursor-steep-guidance.md](docs/cursor-steep-guidance.md)** (joins, metrics, anti-bias) · [docs/](docs/) (Steep Help links) · [docs/STEEP-AS-CODE.md](docs/STEEP-AS-CODE.md) (short fallback checklist).
+**Repo index (browse anytime):** [AGENTS.md](AGENTS.md) · **[docs/cursor-steep-guidance.md](docs/cursor-steep-guidance.md)** (joins, metrics, anti-bias) · [docs/demo-script.md](docs/demo-script.md) (5-minute client flow) · [docs/](docs/) (Steep Help links) · [docs/STEEP-AS-CODE.md](docs/STEEP-AS-CODE.md) (short fallback checklist).
 
 ---
 
@@ -126,8 +132,10 @@ See [Cursor MCP](https://docs.cursor.com/context/mcp) if tools do not appear. Au
 | [business-context.md](business-context.md) | Questionnaire: company, teams, questions, categories, deny-list. |
 | [star-schema/](star-schema/) | dbt mart SQL + enriched [models/marts/schema.yml](star-schema/models/marts/schema.yml). |
 | [modules/](modules/) | Output for Steep-as-code YAML (e.g. `transactions.yaml`). Git tracks only a **`.gitkeep`** placeholder until you generate files (`@README.md` + prompt); treat generated `*.yaml` as local unless you commit them. |
+| [examples/expected-output/](examples/expected-output/) | Golden examples for Finance and Operations demos. These are intentionally outside `modules/` so live generation still starts empty. |
 | [.cursor/skills/generate-steep-modules/](.cursor/skills/generate-steep-modules/) | Skill + local YAML reference + metric patterns. |
 | [docs/](docs/) | **Steep Help Center links**, [cursor-steep-guidance.md](docs/cursor-steep-guidance.md) (**deep conventions**), [STEEP-AS-CODE.md](docs/STEEP-AS-CODE.md) (short fallback checklist). |
+| [scripts/validate_semantic_contract.rb](scripts/validate_semantic_contract.rb) | Local validation for schema/SQL alignment, join paths, metric ids, safe dimensions, and expected YAML examples. |
 
 ### Git branch for `modules/` (create, commit, **push**)
 
@@ -144,3 +152,18 @@ When you intend to **delete the whole Steep-as-code semantic layer** from the re
 ## 5. BigQuery and dbt (optional)
 
 Mart SQL under `star-schema/models/marts/` may reference fixed project/dataset names (e.g. `steep-demo.steep_demo_v2`). Replace with yours, load data, then run `dbt run` from `star-schema/` when you want warehouse-backed tables. For Cursor-only demos, **sections 1–2** are enough; add **section 3** when BigQuery MCP is configured.
+
+For a local syntax smoke test without using your hidden `~/.dbt/profiles.yml`, run:
+
+```bash
+cd star-schema
+mkdir -p /tmp/demo-cursor-dbt-profile
+cp profiles.example.yml /tmp/demo-cursor-dbt-profile/profiles.yml
+dbt parse --profiles-dir /tmp/demo-cursor-dbt-profile --target-path /tmp/demo-cursor-dbt-target --log-path /tmp/demo-cursor-dbt-logs
+```
+
+For the repo semantic contract check:
+
+```bash
+ruby scripts/validate_semantic_contract.rb
+```

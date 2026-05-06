@@ -1,0 +1,94 @@
+module:
+  identifier: transactions
+  schema: steep_demo_v2
+  table: fact_transactions
+  label: Transactions
+  description: One row per money movement (card_spend, payment, deposit, withdrawal, transfer).
+  dimensions:
+    - column: merchant_category
+      label: Merchant Category
+      type: categorical
+    - column: transaction_type
+      label: Transaction Type
+      type: categorical
+    - column: status
+      label: Status
+      type: categorical
+    - column: currency
+      label: Currency
+      type: categorical
+    - column: payment_method
+      label: Payment Method
+      type: categorical
+    - column: risk_flag
+      label: Risk Flag
+      type: categorical
+    - column: country
+      label: Country
+      type: country
+    - column: city
+      label: City
+      type: city
+    - column: h3_res_5
+      label: H3 Res 5
+      type: h3-cell-index
+    - column: created_at
+      label: Created At
+      type: time
+  metrics:
+    - identifier: success_rate
+      name: Transaction Success Rate
+      calculation: custom-ratio
+      numerator_sql: "SUM(CASE WHEN fact_transactions.status = 'completed' THEN 1 END)"
+      denominator_sql: "COUNT(*)"
+      format: percentage
+      time: fact_transactions.created_at
+      category: Operations
+      owner_emails:
+        - ops@acmepay.com
+      dimensions:
+        - country
+        - city
+        - payment_method
+        - transaction_type
+    - identifier: failed_transactions
+      name: Failed Transactions
+      calculation: count
+      time: fact_transactions.created_at
+      category: Operations
+      owner_emails:
+        - ops@acmepay.com
+      filters:
+        - column: status
+          operator: equals
+          expression: failed
+      dimensions:
+        - country
+        - city
+        - payment_method
+        - risk_flag
+    - identifier: avg_transaction_amount
+      name: Avg Transaction Amount
+      calculation: custom-ratio
+      numerator_sql: "SUM(fact_transactions.amount)"
+      denominator_sql: "COUNT(*)"
+      format: number
+      time: fact_transactions.created_at
+      category: Operations
+      owner_emails:
+        - ops@acmepay.com
+      filters:
+        - column: status
+          operator: equals
+          expression: completed
+      dimensions:
+        - country
+        - payment_method
+        - transaction_type
+  joinPaths:
+    - from:
+        column: transaction_id
+      to:
+        table: fact_risk_events
+        column: transaction_id
+      type: one-to-many
