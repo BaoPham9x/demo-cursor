@@ -1,6 +1,6 @@
 # Star schema (dbt marts)
 
-SQL views/tables that model a **fintech SMB neobank**: customers, accounts, transactions, subscriptions, ARR snapshots, marketing visitors and ad spend, risk events, and product feature adoption.
+SQL views/tables that model a **fintech company**: customers, accounts, transactions, subscriptions, ARR snapshots, marketing visitors and ad spend, risk events, and product feature adoption.
 
 ## Files
 

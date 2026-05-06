@@ -72,8 +72,8 @@ models:
             format: percentage
             time: dim_customer.created_at
             category: Commercial
-          - identifier: kyc_approved
-            name: KYC Approved %
+          - identifier: kyb_approved
+            name: KYB Approved %
             calculation: custom-ratio
             numerator_sql: "SUM(CASE WHEN dim_customer.kyb_status = 'approved' THEN 1 END)"
             denominator_sql: "COUNT(*)"
@@ -81,7 +81,7 @@ models:
             time: dim_customer.created_at
             category: Operations
           - identifier: avg_kyb_completion_days
-            name: Avg KYC Completion Days
+            name: Avg KYB Completion Days
             calculation: custom-value
             sql_expression: "AVG(dim_customer.kyb_completion_days)"
             time: dim_customer.created_at
@@ -99,11 +99,11 @@ models:
       - name: customer_id
         meta: { dimension_type: none, is_join_key: true }
       - name: first_name
-        meta: { dimension_type: categorical }
+        meta: { dimension_type: none, sensitive: true }
       - name: last_name
-        meta: { dimension_type: categorical, sensitive: true }
+        meta: { dimension_type: none, sensitive: true }
       - name: email
-        meta: { dimension_type: categorical, sensitive: true }
+        meta: { dimension_type: none, sensitive: true }
       - name: country
         description: Customer country for reporting (ISO-style codes in demo data).
         meta: { dimension_type: country, example_values: ["US", "GB", "NL", "SE", "ES"] }
@@ -360,11 +360,11 @@ models:
       - name: customer_id
         meta: { dimension_type: none, is_join_key: true }
       - name: customer_key
-        meta: { dimension_type: categorical, is_join_key: true }
+        meta: { dimension_type: none, is_join_key: true }
       - name: account_key
-        meta: { dimension_type: categorical, is_join_key: true }
+        meta: { dimension_type: none, is_join_key: true }
       - name: merchant_key
-        meta: { dimension_type: categorical, is_join_key: true }
+        meta: { dimension_type: none, is_join_key: true }
       - name: merchant_name
         description: Merchant display name denormalized on the transaction row.
         meta: { dimension_type: categorical }
@@ -387,6 +387,12 @@ models:
       - name: payment_method
         description: Rail used to move funds (card, wallet, bank transfer, ACH).
         meta: { dimension_type: categorical, example_values: ["card", "wallet", "bank_transfer", "ach"] }
+      - name: balance_before
+        description: Account balance immediately before the transaction; exposed as a measure, not a categorical slice.
+        meta: { dimension_type: none, unit: currency_amount }
+      - name: balance_after
+        description: Account balance immediately after the transaction; exposed as a measure, not a categorical slice.
+        meta: { dimension_type: none, unit: currency_amount }
       - name: risk_flag
         description: Risk/compliance flag on the transaction for fraud and ops monitoring.
         meta: { dimension_type: categorical, example_values: ["normal", "high_risk", "suspicious", "aml_review"] }
@@ -562,8 +568,6 @@ models:
         meta: { dimension_type: categorical }
       - name: mrr
         meta: { dimension_type: none, unit: currency_amount }
-      - name: arr
-        meta: { dimension_type: none }
       - name: subscription_arr
         meta: { dimension_type: none }
       - name: arr_contribution
@@ -628,7 +632,7 @@ models:
         description: Marketing campaign label for the aggregate row.
         meta: { dimension_type: categorical }
       - name: visitor_key
-        meta: { dimension_type: categorical, is_join_key: true }
+        meta: { dimension_type: none, is_join_key: true }
       - name: total_sessions
         meta: { dimension_type: none }
       - name: total_visitors
@@ -702,7 +706,7 @@ models:
         description: Timestamp of the ad spend event or reporting row (primary time for this fact).
         meta: { dimension_type: time }
       - name: visitor_key
-        meta: { dimension_type: categorical, is_join_key: true }
+        meta: { dimension_type: none, is_join_key: true }
 
   - name: fact_risk_events
     description: Risk and compliance events tied to customers, optional transaction and account.
@@ -769,7 +773,7 @@ models:
         meta: { dimension_type: none, is_join_key: true }
       - name: risk_event_type_key
         description: Foreign key to dim_risk_event_type (also denormalized event labels may exist).
-        meta: { dimension_type: categorical, is_join_key: true }
+        meta: { dimension_type: none, is_join_key: true }
       - name: event_type
         description: Event type label on the risk fact row.
         meta: { dimension_type: categorical }
@@ -789,7 +793,7 @@ models:
         meta: { dimension_type: none, unit: hours }
       - name: description
         description: Free-text case notes (treat as sensitive in some deployments).
-        meta: { dimension_type: categorical }
+        meta: { dimension_type: none, sensitive: true }
 
   - name: fact_customer_features
     description: Product feature flags per customer (adoption / activation).
@@ -807,13 +811,14 @@ models:
             join_type: many-to-one
         reference_metrics:
           - identifier: unique_customers_with_features
-            calculation: count
+            calculation: count-distinct
+            distinct_on: fact_customer_features.customer_key
             time: fact_customer_features.activated_at
             category: Product
           - identifier: feature_adoption_rate
             calculation: custom-ratio
             numerator_sql: "COUNT(DISTINCT fact_customer_features.customer_key)"
-            denominator_sql: "COUNT(dim_customer.customer_id)"
+            denominator_sql: "COUNT(DISTINCT dim_customer.customer_id)"
             format: percentage
             time: fact_customer_features.activated_at
             category: Product
