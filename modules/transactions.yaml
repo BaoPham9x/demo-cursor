@@ -1,0 +1,18 @@
+module:
+  identifier: transactions
+  schema: steep_demo_v2
+  table: fact_transactions
+  label: Transactions
+  description: One row per money movement.
+  dimensions:
+    - column: created_at
+      label: Created At
+      type: time
+  metrics:
+    - identifier: transaction_count
+      name: Transaction Count
+      calculation: count
+      time: fact_transactions.created_at
+      category: Operations
+      owner_emails:
+        - ops@acmepay.com
