@@ -135,7 +135,7 @@ When generating Steep-as-code YAML, follow [AGENTS.md](AGENTS.md) / the bundled 
 
 ### Removing the semantic layer (Steep + Git)
 
-When you intend to **delete the whole Steep-as-code semantic layer** from the repo (for example clearing `modules/*.yaml` before a fresh generation), **leave exactly one metric** in YAML on purpose for the last sync. That makes the change obviously deliberate—an empty tree can look like an accident or a bad sync. After reviewers agree the layer is gone, **remove that last metric manually** (follow-up commit or delete in the Steep app), depending on how you manage the workspace.
+When you intend to **delete the whole Steep-as-code semantic layer** from the repo (for example clearing `modules/*.yaml` before a fresh generation), **leave exactly one module with exactly one metric** in YAML on purpose for the last sync. If you ask Cursor to "restart", "reset", "delete modules", or "delete all modules", it should not leave `modules/` empty. Prefer keeping a tiny `customers.yaml` module with only the `total_customers` metric. That makes the change obviously deliberate—an empty tree can look like an accident or a bad sync. After reviewers agree the layer is gone, **remove that last metric manually** (follow-up commit or delete in the Steep app), depending on how you manage the workspace.
 
 **Disconnecting GitHub from Steep** (turning off the integration or unlinking the repo) **does not delete** metrics, modules, or definitions that already live in Steep. They remain until you remove or replace them inside Steep or via a later sync that actually deletes content per [Steep Define in Code](https://help.steep.app/setup-and-manage/define-in-code) behavior.
 

@@ -25,6 +25,7 @@ If you still need this fallback checklist, **`@` this file** (`docs/STEEP-AS-COD
 - Metrics: include a clear business `description` and a relevant non-empty `dimensions` list on every metric. Pick useful slices from the questionnaire defaults plus local/joined dimensions in `schema.yml`; do not use IDs, join keys, sensitive fields, lat/long, or free-text notes.
 - Apply the deny list from `business-context.md` section 3: never add those columns to `dimensions` on metrics.
 - Metric identifiers must be unique across all modules in the workspace.
+- Reset/delete flow: if the user asks to restart, reset, delete modules, delete all modules, or clear the semantic layer, do **not** leave `modules/` empty. Keep exactly one module with exactly one metric, preferably `modules/customers.yaml` with `total_customers`, so Steep can sync the cleanup.
 
 ## Patterns
 

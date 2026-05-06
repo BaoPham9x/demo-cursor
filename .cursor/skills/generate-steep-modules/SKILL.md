@@ -38,6 +38,7 @@ If critical fields are blank and the user did not give alternatives in chat, ask
 - If the user names a **team** (Finance, Operations, Risk, Marketing), map to that team's top questions in `business-context.md` and plan roughly **one metric per question** (merge overlapping questions).
 - If the user names a **table / module** (transactions, subscriptions, agg_arr, …), map to the dbt model name via `schema.yml` `meta.steep.module_identifier` / `target_table`.
 - If the user says **bootstrap everything**, create modules for every model in `schema.yml` that has `meta.steep.module_identifier` and at least one `reference_metrics` or obvious count metric on `default_time_column`.
+- If the user says **restart**, **reset**, **delete modules**, **delete all modules**, **clear modules**, or **rebuild from scratch**, treat it as a Steep cleanup task: delete generated module YAML except for exactly **one** valid module file with exactly **one** metric. Prefer `modules/customers.yaml` with only the `total_customers` metric from `dim_customer`. Never leave `modules/` empty, because Steep may treat an empty sync as accidental or invalid.
 
 ## Step 2b — Proactively create a git branch before any `modules/` work (default)
 
@@ -136,4 +137,5 @@ Summarize files written, metric count per module, join paths added, how metric d
 - **Proactively create and use a feature branch** (Step 2b) before touching `modules/` in git — do not ask “should I create a branch?” unless git is disallowed.
 - **Never invent columns or tables** — only names present in `schema.yml` (and mart SQL under `star-schema/models/marts/` if you need to disambiguate).
 - **Never invent categorical filter values** — use `schema.yml` `example_values` or explicit user-provided literals.
+- **Never empty `modules/` during a reset/delete flow** — leave exactly one module with exactly one metric, preferably `customers.total_customers`, so Steep can sync the cleanup.
 - Prefer **2-space** indentation and no trailing spaces in YAML.
