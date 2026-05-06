@@ -49,6 +49,61 @@ Open **[business-context.md](business-context.md)** before you ask Cursor to gen
 
 **dbt docs vs Steep contract:** In `schema.yml`, **model and column `description`** fields should stay **business and warehouse meaning** (grain, definitions, caveats)—the same text you would show in dbt docs to someone who never uses Steep. **Do not** paste Steep product jargon or UI-only explanations there. Steep-specific wiring (module ids, join graph, `dimension_type` for codegen helpers, reference metric recipes) belongs under **`meta.steep`** and in generated **`modules/*.yaml`**, not in dbt descriptions. When Steep YAML lists a `dimensions[].description`, copy **only** that neutral dbt column `description` verbatim (or leave the Steep field empty if unset). To **test Cursor on “plain dbt”**, ask for a semantic layer from **mart SQL + standard `schema.yml` descriptions** and say to **ignore or omit `meta.steep`** in that run—harder and less deterministic than this template, but a fair experiment.
 
+### Steep YAML validation checklist (prevents common parse failures)
+
+Before syncing any `modules/*.yaml`, validate against [yaml-schema-reference.md](.cursor/skills/generate-steep-modules/references/yaml-schema-reference.md) and [Code Reference](https://help.steep.app/setup-and-manage/code-reference):
+
+- In `module.dimensions`, every item must use **`column`** (required). Do **not** use `name`.
+- In metric `filters`, each filter must include `column`, `operator`, and `expression`.
+- Module root is strict: only `identifier`, `schema`, `table`, `label`, `description`, `dimensions`, `metrics`, `joinPaths` are valid under `module`.
+- Put governance keys such as `category` / `owner_emails` on **metrics**, not the `module` root.
+- A single invalid file blocks the whole sync; run a quick key-shape check on each changed YAML before commit/push.
+
+**Bad (will fail):**
+
+```yaml
+module:
+  identifier: accounts
+  schema: steep_demo_v2
+  table: dim_account
+  name: Accounts
+  category: Operations
+  owner_emails:
+    - ops@example.com
+  dimensions:
+    - name: account_type
+      type: categorical
+```
+
+**Good (valid shape):**
+
+```yaml
+module:
+  identifier: accounts
+  schema: steep_demo_v2
+  table: dim_account
+  label: Accounts
+  description: Account dimension table.
+  dimensions:
+    - column: account_type
+      label: Account Type
+      type: categorical
+  metrics:
+    - identifier: active_accounts
+      name: Active Accounts
+      calculation: count
+      time: dim_account.created_at
+      category: Operations
+      owner_emails:
+        - ops@example.com
+      filters:
+        - column: account_status
+          operator: equals
+          expression: active
+      dimensions:
+        - "this.*"
+```
+
 **Optional — BigQuery MCP:** use MCP to list tables, inspect types, or preview rows. Still treat **`schema.yml`** as the semantic contract (Steep module ids, join paths, reference metrics) so YAML matches this demo’s intent. MCP replaces ad-hoc row peeking; you do **not** need extra CSVs in this repo.
 
 ---
