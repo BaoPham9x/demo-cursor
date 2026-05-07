@@ -4,6 +4,8 @@ Sales-friendly Cursor workspace: generate **Steep-as-code** YAML (`modules/*.yam
 
 **Handoff:** This repo is a **template** — the bundled skill and YAML reference are **portable**; the mart names, join graph, and questionnaire content are **examples** until you replace them.
 
+**Client agent entrypoint:** attach [agent-guidance.md](agent-guidance.md) in Cursor or Claude Code when you want an agent to build a client's semantic layer from their own dbt/star schema, business context, and optional MCP/database access.
+
 ---
 
 ## New chat in Cursor — one attachment

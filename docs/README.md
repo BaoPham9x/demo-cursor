@@ -23,6 +23,7 @@ Use these when validating YAML, sync behavior, or product semantics. Our bundled
 
 | Path | Purpose |
 |------|---------|
+| [../agent-guidance.md](../agent-guidance.md) | Portable agent entrypoint for clients: attach this in Cursor or Claude Code to build a Steep semantic layer from their repo, dbt/star schema, business context, and optional MCP/database access. |
 | [../business-context.md](../business-context.md) | Questionnaire (stays at root for easy editing). |
 | [../star-schema/models/marts/schema.yml](../star-schema/models/marts/schema.yml) | Enriched semantic + join graph for this dataset. |
 | [../.cursor/skills/generate-steep-modules/](../.cursor/skills/generate-steep-modules/) | Bundled skill + local YAML reference + metric patterns. |

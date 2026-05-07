@@ -1,3 +1,3 @@
-@README.md
+@agent-guidance.md
 
-Bootstrap everything: generate Steep-as-code YAML under modules/ for the whole company using the example business context as-is. Create a branch, commit the generated YAML, and push the branch to GitHub. Tell me the branch name so I can select that branch in Steep and sync it.
+Build the Steep semantic layer for this repo. Inspect the repo first, ask me for missing business context if needed, generate or update `modules/*.yaml`, create a branch, commit the generated YAML, and push the branch to GitHub. Tell me the branch name so I can select that branch in Steep and sync it.
