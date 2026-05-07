@@ -56,6 +56,45 @@ If the repo does not already answer these, ask the user to fill them in before b
 
 If the user cannot answer everything, build a small useful first version and list assumptions clearly.
 
+## Business Context Questionnaire
+
+If business context is missing or thin, ask the user to answer this compact template. Accept partial answers, then use dbt docs and MCP/database access to fill obvious gaps.
+
+```text
+Company/product:
+What does the business do, and what product or workflow does this data describe?
+
+Teams/audiences:
+Who will use these metrics in Steep? Example: Finance, Sales, Marketing, Product, Operations, Support, Risk.
+
+Top questions:
+What are the most important questions these teams want to answer? List 3-10.
+
+KPI definitions:
+Which metrics matter most, and how should each one be calculated? Include filters, exclusions, edge cases, and whether it is a count, sum, rate, ratio, average, or distinct count.
+
+Default slices:
+Which dimensions should users commonly break metrics down by? Example: country, region, plan, product, channel, status, segment, customer type, lifecycle stage, merchant category.
+
+Time behavior:
+Which date should each metric use? What time grains matter? Example: daily, weekly, monthly, quarterly. What timezone should reporting use?
+
+Units and formatting:
+Which metrics are currency, percentages, counts, durations, or scores? Which currency should be shown?
+
+Sensitive fields:
+Which fields must not be exposed as dimensions? Include PII, customer names, emails, addresses, free-text notes, internal IDs, or restricted operational fields.
+
+Owners and categories:
+Who owns the metrics? Which categories should appear in Steep?
+
+Existing definitions:
+Are there existing Steep metrics, BI dashboards, Looker/LookML, MetricFlow, spreadsheets, or docs that should be preserved or matched?
+
+Warehouse access:
+Is MCP or database access available to verify table names, columns, data types, and example values?
+```
+
 ## Translate Data Models Into Steep
 
 Use dbt and the warehouse as the data contract. Use business context as the semantic contract.
