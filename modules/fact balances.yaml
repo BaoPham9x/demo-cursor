@@ -1,0 +1,8 @@
+module:
+  identifier: "balances"
+  schema: "steep_demo_v2"
+  table: "fact_balances"
+  dimensions:
+    - column: "currency"
+      type: "categorical"
+      label: "Currency"

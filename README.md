@@ -1,203 +1,71 @@
-# Demo Cursor — Steep-as-code (fintech star schema)
+# Steep-as-code Agent Example
 
-Sales-friendly Cursor workspace: generate **Steep-as-code** YAML (`modules/*.yaml`) from an enriched star schema. No pre-built modules, no data generators inside this repo. **Official Steep docs** (YAML, GitHub sync, migration): [docs/README.md](docs/README.md).
+This repository is a compact example showing how an AI coding agent with
+repository access can generate Steep-as-code YAML from dbt-style marts, business
+context, and optional warehouse access.
 
-**Handoff:** This repo is a **template** — the bundled skill and YAML reference are **portable**; the mart names, join graph, and questionnaire content are **examples** until you replace them.
+## Start Here
 
-**Client agent entrypoint:** attach [agent-guidance.md](agent-guidance.md) in Cursor or Claude Code when you want an agent to build a client's semantic layer from their own dbt/star schema, business context, and optional MCP/database access.
+Open this repository in your coding agent, point it at
+[agent-guidance.md](agent-guidance.md), and ask:
 
----
-
-## New chat in Cursor — one attachment
-
-**Sales / new chat:** In Cursor, type **`@README.md`** and then your request in plain English. You do **not** need to attach `business-context.md`, `schema.yml`, or other folders — the agent opens those files from this repo when generating Steep-as-code YAML under [`modules/`](modules/).
-
-**Quick options in the same message:**
-
-- *“Use the example questionnaire as-is.”* — keeps the pre-filled Acme Pay defaults in [`business-context.md`](business-context.md) (fine for internal demos).
-- *“I have BigQuery MCP configured.”* — optional; ask for a warehouse cross-check on columns if something looks ambiguous; YAML shape should still follow [`star-schema/models/marts/schema.yml`](star-schema/models/marts/schema.yml).
-
-**Copy-paste prompts** (put these right after `@README.md`):
-
-1. **Finance (default story):** *“Generate Steep-as-code YAML under `modules/` for the Finance team’s top questions from this repo.”*
-2. **Example questionnaire:** *“Generate Steep modules for Operations using the example business context as-is.”*
-3. **One mart:** *“Generate Steep YAML for the transactions mart only; respect the deny list in business-context.”*
-4. **Risk:** *“Add fraud-style metrics on transactions with risk joins; follow join paths in schema.yml.”*
-5. **Bootstrap several marts:** *“Create Steep modules for transactions, subscriptions, and fact_agg_arr with dimensions and join paths from this repo.”*
-
-**If the assistant seems lost:** add **`@docs/STEEP-AS-CODE.md`** once, or write *“Follow AGENTS.md and docs/cursor-steep-guidance.md for this repo.”*
-
-**Repo index (browse anytime):** [AGENTS.md](AGENTS.md) · **[docs/cursor-steep-guidance.md](docs/cursor-steep-guidance.md)** (joins, metrics, anti-bias) · [docs/](docs/) (Steep Help links) · [docs/STEEP-AS-CODE.md](docs/STEEP-AS-CODE.md) (short fallback checklist).
-
----
-
-## 1. Fill the questionnaire first (strongly recommended)
-
-Open **[business-context.md](business-context.md)** before you ask Cursor to generate metrics.
-
-| Why | What happens if you skip |
-|-----|---------------------------|
-| Teams, top questions, and categories tell the agent **which** metrics to build and how to label them (`Commercial`, `Operations`, owner emails). | You get generic metrics that do not match the story you want to tell. |
-| The deny-list (sensitive fields) keeps **email / names / lat-long** off default dimension lists. | Risk of surfacing PII-style fields in YAML. |
-| It ships **pre-filled** (Acme Pay, B2B neobank) so you can demo in 30 seconds **or** overwrite for a real prospect. | — |
-
-**Suggested flow:** edit [`business-context.md`](business-context.md) (or confirm the defaults) → in Cursor use **`@README.md`** plus a prompt from **New chat in Cursor** above (no need to list other paths).
-
----
-
-## 2. Ground truth for Cursor (keep it simple)
-
-**Default — no BigQuery MCP:** everything comes from **[`star-schema/models/marts/schema.yml`](star-schema/models/marts/schema.yml)** — column names, join graph, `example_values` for filters/slices, metric recipes, and **model/column descriptions**. Optional: mart **SQL** under [`star-schema/models/marts/`](star-schema/models/marts/) if you need exact `SELECT` lists.
-
-**dbt docs vs Steep contract:** In `schema.yml`, **model and column `description`** fields should stay **business and warehouse meaning** (grain, definitions, caveats)—the same text you would show in dbt docs to someone who never uses Steep. **Do not** paste Steep product jargon or UI-only explanations there. Steep-specific wiring (module ids, join graph, `dimension_type` for codegen helpers, reference metric recipes) belongs under **`meta.steep`** and in generated **`modules/*.yaml`**, not in dbt descriptions. When Steep YAML lists a `dimensions[].description`, copy **only** that neutral dbt column `description` verbatim (or leave the Steep field empty if unset). To **test Cursor on “plain dbt”**, ask for a semantic layer from **mart SQL + standard `schema.yml` descriptions** and say to **ignore or omit `meta.steep`** in that run—harder and less deterministic than this template, but a fair experiment.
-
-### Steep YAML validation checklist (prevents common parse failures)
-
-Before syncing any `modules/*.yaml`, validate against [yaml-schema-reference.md](.cursor/skills/generate-steep-modules/references/yaml-schema-reference.md) and [Code Reference](https://help.steep.app/setup-and-manage/code-reference):
-
-- In `module.dimensions`, every item must use **`column`** (required). Do **not** use `name`.
-- In metric `filters`, each filter must include `column`, `operator`, and `expression`.
-- Module root is strict: only `identifier`, `schema`, `table`, `label`, `description`, `dimensions`, `metrics`, `joinPaths` are valid under `module`.
-- Put governance keys such as `category` / `owner_emails` on **metrics**, not the `module` root.
-- A single invalid file blocks the whole sync; run a quick key-shape check on each changed YAML before commit/push.
-
-**Bad (will fail):**
-
-```yaml
-module:
-  identifier: accounts
-  schema: steep_demo_v2
-  table: dim_account
-  name: Accounts
-  category: Operations
-  owner_emails:
-    - ops@example.com
-  dimensions:
-    - name: account_type
-      type: categorical
+```text
+Build the Steep semantic layer for this repo. Inspect the repo first, ask for
+missing business context only when it changes the metrics, generate or update
+modules/*.yaml, validate the YAML, create a branch, commit, push, and tell me
+which branch to select in Steep.
 ```
 
-**Good (valid shape):**
+`agent-guidance.md` is the only agent instruction file. It includes the workflow,
+business-context questions, example Acme Pay context, technical setup notes,
+Steep YAML rules, join-path guidance, metric patterns, validation checklist, and
+final-response expectations.
 
-```yaml
-module:
-  identifier: accounts
-  schema: steep_demo_v2
-  table: dim_account
-  label: Accounts
-  description: Account dimension table.
-  dimensions:
-    - column: account_type
-      label: Account Type
-      type: categorical
-  metrics:
-    - identifier: active_accounts
-      name: Active Accounts
-      calculation: count
-      time: dim_account.created_at
-      category: Operations
-      owner_emails:
-        - ops@example.com
-      filters:
-        - column: account_status
-          operator: equals
-          expression: active
-      dimensions:
-        - "this.*"
+## Repository Map
+
+- [agent-guidance.md](agent-guidance.md): full instructions for the agent.
+- [star-schema/models/marts/schema.yml](star-schema/models/marts/schema.yml):
+  dbt model and column docs, examples, join hints, and reference metric recipes.
+- [star-schema/models/marts/](star-schema/models/marts): mart SQL when the agent
+  needs to inspect grain or column lineage.
+- [star-schema/dbt_project.yml](star-schema/dbt_project.yml): dbt project
+  configuration.
+- [star-schema/models/sources.yml](star-schema/models/sources.yml): source
+  table definitions.
+- `modules/`: example Steep-as-code YAML modules included for reference; for a
+  real workspace, the agent can update or replace these files.
+
+## Customize For A Real Workspace
+
+Before asking the agent to generate metrics for a real workspace, replace the
+example business context and schema details in [agent-guidance.md](agent-guidance.md)
+and [star-schema/models/marts/schema.yml](star-schema/models/marts/schema.yml).
+The example currently uses Acme Pay, a B2B SMB neobank.
+
+Mart SQL under `star-schema/models/marts/` references the example BigQuery
+project and dataset `steep-demo.steep_demo_v2`. Replace those names before
+running dbt against your own warehouse. For an example run without BigQuery, the
+agent can rely on `schema.yml` and the mart SQL files.
+
+## Technical Setup
+
+For a fresh macOS machine, ask the agent:
+
+```text
+Audit this machine and install missing developer requirements so an AI coding
+agent can run this repo. Ask before each install step. Prefer Homebrew. Do not
+modify project code, commit, or push anything. Check Xcode command line tools,
+Homebrew, git, GitHub CLI, Node.js, pnpm, Python 3, pipx, jq, yq, and optionally
+Docker. Authenticate interactive tools with me in the loop, especially gh auth
+login. Print installed versions, skipped or failed steps, and manual follow-up
+commands.
 ```
 
-**Optional — BigQuery MCP:** use MCP to list tables, inspect types, or preview rows. Still treat **`schema.yml`** as the semantic contract (Steep module ids, join paths, reference metrics) so YAML matches this demo’s intent. MCP replaces ad-hoc row peeking; you do **not** need extra CSVs in this repo.
+## Steep Help Center
 
----
-
-## 3. BigQuery MCP (optional — for reps with warehouse access)
-
-Use this when the dataset already lives in BigQuery and you want Cursor to **verify** names or types against the warehouse.
-
-### What MCP adds
-
-| Capability | In this repo without MCP |
-|------------|---------------------------|
-| Live table/column list and types | `schema.yml` + dbt SQL |
-| Preview rows from BQ | Not shipped here; use MCP when configured |
-| Catch drift (renamed columns, new fields) | Manual edits to `schema.yml` |
-
-The **bundled skill** is built around **repo files only**. If MCP is available, say so in chat (e.g. *“Cross-check `fact_transactions` columns in BigQuery then generate YAML using schema.yml”*).
-
-### One-time setup (Cursor)
-
-1. **Install Google’s MCP toolbox** (example: macOS Apple Silicon). Other platforms: [mcp-toolbox quick start](https://github.com/googleapis/mcp-toolbox#quick-start-custom-tools).
-
-```bash
-export VERSION=1.1.0
-curl -L -o toolbox https://storage.googleapis.com/mcp-toolbox-for-databases/v$VERSION/darwin/arm64/toolbox
-chmod +x toolbox
-# Move `toolbox` somewhere permanent, e.g. ~/bin/toolbox
-```
-
-2. **Register BigQuery in Cursor MCP config** — user-level `~/.cursor/mcp.json` or project-level `.cursor/mcp.json`. Replace paths and project id:
-
-```json
-{
-  "mcpServers": {
-    "bigquery": {
-      "command": "/full/path/to/toolbox",
-      "args": ["--prebuilt", "bigquery", "--stdio"],
-      "env": {
-        "BIGQUERY_PROJECT": "your-gcp-project-id"
-      }
-    }
-  }
-}
-```
-
-Exact JSON shape depends on your Cursor version. **Flat server key** alternative:
-
-```json
-{
-  "bigquery": {
-    "command": "/full/path/to/toolbox",
-    "args": ["--prebuilt", "bigquery", "--stdio"],
-    "env": {
-      "BIGQUERY_PROJECT": "your-gcp-project-id"
-    }
-  }
-}
-```
-
-See [Cursor MCP](https://docs.cursor.com/context/mcp) if tools do not appear. Authenticate per the toolbox README.
-
-3. **Restart Cursor** (or reload MCP).
-
-### Prompt ideas when MCP is on
-
-- *“`@README.md` — generate Finance metrics; use BigQuery MCP to confirm `fact_transactions` columns match before writing YAML.”*
-- *“`@README.md` — list tables in `my-project.steep_demo_v2` and suggest Steep modules; align join paths with schema.yml.”*
-
----
-
-## 4. What is in this repo
-
-| Path | Purpose |
-|------|---------|
-| [business-context.md](business-context.md) | Questionnaire: company, teams, questions, categories, deny-list. |
-| [star-schema/](star-schema/) | dbt mart SQL + enriched [models/marts/schema.yml](star-schema/models/marts/schema.yml). |
-| [modules/](modules/) | Output for Steep-as-code YAML (e.g. `transactions.yaml`). Git tracks only a **`.gitkeep`** placeholder until you generate files (`@README.md` + prompt); treat generated `*.yaml` as local unless you commit them. |
-| [.cursor/skills/generate-steep-modules/](.cursor/skills/generate-steep-modules/) | Skill + local YAML reference + metric patterns. |
-| [docs/](docs/) | **Steep Help Center links**, [cursor-steep-guidance.md](docs/cursor-steep-guidance.md) (**deep conventions**), [STEEP-AS-CODE.md](docs/STEEP-AS-CODE.md) (short fallback checklist). |
-
-### Git branch for `modules/` (create, commit, **push**)
-
-When generating Steep-as-code YAML, follow [AGENTS.md](AGENTS.md) / the bundled skill: **create a feature branch before editing `modules/`**, then **commit** the new or changed `*.yaml` files. **Push that branch to the remote** (for example `git push -u origin steep/your-topic`) as part of the same flow. A branch that only exists locally does **not** show up on GitHub/GitLab or in teammates’ clones, and Steep **Define in Code** sync expects a branch on the host you connected. If you skip the push, you will not see the branch on the remote until you run it yourself.
-
-### Removing the semantic layer (Steep + Git)
-
-When you intend to **delete the whole Steep-as-code semantic layer** from the repo (for example clearing `modules/*.yaml` before a fresh generation), **leave exactly one module with exactly one metric** in YAML on purpose for the last sync. If you ask Cursor to "restart", "reset", "delete modules", or "delete all modules", it should not leave `modules/` empty. Prefer keeping a tiny `customers.yaml` module with only the `total_customers` metric. That makes the change obviously deliberate—an empty tree can look like an accident or a bad sync. After reviewers agree the layer is gone, **remove that last metric manually** (follow-up commit or delete in the Steep app), depending on how you manage the workspace.
-
-**Disconnecting GitHub from Steep** (turning off the integration or unlinking the repo) **does not delete** metrics, modules, or definitions that already live in Steep. They remain until you remove or replace them inside Steep or via a later sync that actually deletes content per [Steep Define in Code](https://help.steep.app/setup-and-manage/define-in-code) behavior.
-
----
-
-## 5. BigQuery and dbt (optional)
-
-Mart SQL under `star-schema/models/marts/` may reference fixed project/dataset names (e.g. `steep-demo.steep_demo_v2`). Replace with yours, load data, then run `dbt run` from `star-schema/` when you want warehouse-backed tables. For Cursor-only demos, **sections 1–2** are enough; add **section 3** when BigQuery MCP is configured.
+- [Define in Code](https://help.steep.app/setup-and-manage/define-in-code):
+  GitHub connection and sync behavior.
+- [Code Reference](https://help.steep.app/setup-and-manage/code-reference):
+  module, dimension, join path, filter, slice, and metric YAML.
+- [App-to-Code Migration Guide](https://help.steep.app/setup-and-manage/app-to-code-migration-guide):
+  preserve identifiers when moving existing Steep app definitions into code.

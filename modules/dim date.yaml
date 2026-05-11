@@ -1,0 +1,14 @@
+module:
+  identifier: "dim_date"
+  schema: "steep_demo_v2"
+  table: "dim_date"
+  dimensions:
+    - column: "day_name"
+      type: "categorical"
+      label: "Day name"
+    - column: "month_name"
+      type: "categorical"
+      label: "Month name"
+    - column: "date_key"
+      type: "categorical"
+      label: "Date key"
