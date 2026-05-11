@@ -2,7 +2,7 @@
 
 The agent reads this file first and uses your answers to decide which modules and metrics to generate, what to slice on, and who to assign as owners.
 
-> **Pre-filled** with the default demo persona (Acme Pay, a B2B SMB neobank). Edit any field for a real prospect, or run as-is for a generic walkthrough.
+> **Pre-filled** with the default example persona (Acme Pay, a B2B SMB neobank). Edit any field for a real workspace, or run as-is for a generic walkthrough.
 
 ## 1. Who is the company?
 
@@ -10,7 +10,7 @@ The agent reads this file first and uses your answers to decide which modules an
 - **Industry / segment**: B2B SMB neobank (fintech)
 - **Stage / scale**: Series B, ~$8M ARR, ~5,000 SMB customers, ~2M transactions/month
 - **Geographies**: US (primary), GB, NL, SE, ES; reporting currency USD
-- **Demo persona(s)**: CFO, Head of Operations, Head of Risk, Head of Marketing
+- **Example persona(s)**: CFO, Head of Operations, Head of Risk, Head of Marketing
 
 ## 2. Which teams will use Steep?
 

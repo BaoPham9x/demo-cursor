@@ -1,5 +1,5 @@
-# Enriched metadata for Steep-as-code generation (read by any repo-aware agent).
-# Distilled from demo-data-generator data-generation/models/fintech/*.ts and modules/*.yaml.
+# Enriched metadata for Steep-as-code generation (read by any coding agent with repository access).
+# Contains example module targets, join hints, dimension metadata, and metric recipes.
 # BigQuery dataset placeholder: steep_demo_v2 (replace in generated YAML if your dataset differs).
 #
 # Column and model `description` fields are dbt documentation (business / warehouse meaning only).
@@ -105,7 +105,7 @@ models:
       - name: email
         meta: { dimension_type: none, sensitive: true }
       - name: country
-        description: Customer country for reporting (ISO-style codes in demo data).
+        description: Customer country for reporting (ISO-style codes in example data).
         meta: { dimension_type: country, example_values: ["US", "GB", "NL", "SE", "ES"] }
       - name: city
         description: City associated with the customer record.
@@ -189,7 +189,7 @@ models:
         description: Lifecycle status of the account dimension row.
         meta: { dimension_type: categorical }
       - name: currency
-        description: Account reporting currency (USD in demo).
+        description: Account reporting currency (USD in the example data).
         meta: { dimension_type: categorical, example_values: ["USD"] }
       - name: credit_limit
         meta: { dimension_type: none, unit: currency_amount }
@@ -835,7 +835,7 @@ models:
         description: Feature grouping (accounting, receipts, payments).
         meta: { dimension_type: categorical, example_values: ["accounting", "receipts", "payments"] }
       - name: is_active
-        description: Whether the feature flag is on for the customer (true/false strings in demo).
+        description: Whether the feature flag is on for the customer (true/false strings in the example data).
         meta: { dimension_type: categorical, example_values: ["true", "false"] }
       - name: activated_at
         description: When the customer first enabled or activated this product feature.

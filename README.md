@@ -1,16 +1,15 @@
-# Steep-as-code Agent Client Example
+# Steep-as-code Agent Example
 
-This repo is a compact example for showing a client how an agent can generate
-Steep-as-code YAML from dbt-style marts, business context, and optional warehouse
-access.
+This repo is a compact example showing how an AI coding agent with repository
+access can generate Steep-as-code YAML from dbt-style marts, business context,
+and optional warehouse access.
 
 ## Start Here
 
-Use one guidance file: [agent-guidance.md](agent-guidance.md).
+Use one guidance file: [agent-guidance.md](agent-guidance.md). It is written for
+the agent to follow directly.
 
-In Claude Code, Codex, Cursor, or another repo-aware coding agent, attach or
-open `agent-guidance.md`. If the agent supports file mentions, use
-`@agent-guidance.md`, then send:
+Open this repo in your coding agent, point it at `agent-guidance.md`, and ask:
 
 ```text
 Build the Steep semantic layer for this repo. Inspect the repo first, ask for
@@ -22,7 +21,7 @@ which branch to select in Steep.
 `agent-guidance.md` is intentionally the source of truth. The rest of the repo is
 example input data for the agent.
 
-## What To Customize For A Client
+## What To Customize
 
 - [business-context.md](business-context.md): company story, teams, KPI
   questions, owners, categories, default slices, and sensitive-field deny list.
@@ -40,7 +39,5 @@ example input data for the agent.
 
 - Official Steep product links and YAML rules are listed in
   [agent-guidance.md](agent-guidance.md).
-- The old duplicate docs and hidden agent-specific folders have been removed so
-  future edits happen in one visible place.
-- For a real client, replace the demo business context and schema details before
-  asking the agent to generate metrics.
+- For a real workspace, replace the example business context and schema details
+  before asking the agent to generate metrics.

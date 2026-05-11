@@ -1,6 +1,6 @@
 # Metric patterns (Steep-as-code)
 
-Patterns distilled from the production-style demo modules. Use with `star-schema/models/marts/schema.yml` `meta.steep.reference_metrics`. For full metric and module YAML rules, see [Steep Code Reference](https://help.steep.app/setup-and-manage/code-reference). For join placement, `identifier` vs `table`, metric `time` choices, and required metric descriptions/dimensions, see [agent-guidance.md](../../../agent-guidance.md) and the parent [agent playbook](../README.md).
+Patterns distilled from the example module recipes. Use with `star-schema/models/marts/schema.yml` `meta.steep.reference_metrics`. For full metric and module YAML rules, see [Steep Code Reference](https://help.steep.app/setup-and-manage/code-reference). For join placement, `identifier` vs `table`, metric `time` choices, and required metric descriptions/dimensions, see [agent-guidance.md](../../../agent-guidance.md) and the parent [agent playbook](../README.md).
 
 ## 1. Count with filter
 
@@ -134,7 +134,7 @@ metrics:
 
 ## 8. Cross-module dimensions
 
-After join paths exist, reference joined dimensions as `dim_customer.customer_tier`, `dim_account.account_type`, `fact_risk_events.severity`, etc. Prefer a focused list over `this.*` when demoing explainability.
+After join paths exist, reference joined dimensions as `dim_customer.customer_tier`, `dim_account.account_type`, `fact_risk_events.severity`, etc. Prefer a focused list over `this.*` when explaining why each metric is useful.
 
 ## 9. Time grains on subscription / ARR facts
 

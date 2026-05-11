@@ -1,33 +1,13 @@
 # Agent Guidance: Build a Steep Semantic Layer
 
-This is the one client-facing guidance file for this example repo. Open or
-attach it in any coding agent the client uses, such as Claude Code, Codex,
-Cursor, or another repo-aware assistant. If the agent supports file mentions,
-reference it as `@agent-guidance.md`, then ask:
+You are an implementation agent working in a repository that should define a
+Steep semantic layer as code. Your job is to inspect the repo, gather only the
+missing context that materially changes the output, generate or update
+Steep-as-code YAML under `modules/`, validate it, commit it, push the branch, and
+explain how to sync the branch in Steep.
 
-```text
-Build the Steep semantic layer for this repo.
-```
-
-The agent should inspect the repo, collect any missing business context, generate
-or update Steep-as-code YAML under `modules/`, validate it, commit it, push the
-branch, and explain how to sync the branch in Steep.
-
-## What To Send To A Client
-
-Send the repo plus this file. The client can start a new agent chat with one
-attachment or file reference:
-
-```text
-@agent-guidance.md
-
-Build the Steep semantic layer for this repo. Inspect the repo first, ask for
-missing business context only when it changes the metrics, generate or update
-modules/*.yaml, validate the YAML, create a branch, commit, push, and tell me
-which branch to select in Steep.
-```
-
-For this demo repo, the agent will use:
+Start by reading the local files that describe the data model and business
+context. In this repository, the most important inputs are:
 
 - `business-context.md` for the company story, teams, questions, owners, default
   slices, and sensitive-field deny list.
@@ -38,15 +18,16 @@ For this demo repo, the agent will use:
   playbook any agent can read.
 - `modules/*.yaml` as the generated Steep-as-code output.
 
-When adapting this example to a real client, replace the business context and dbt
-schema with the client's materials. Do not keep this demo's Acme Pay story,
-mart names, owners, or example values unless the client is intentionally testing
-the demo unchanged.
+When adapting the workflow to another repository, use that repository's business
+context, dbt docs, SQL, warehouse metadata, and existing semantic definitions.
+Do not keep this repository's Acme Pay story, mart names, owners, or example
+values unless the user explicitly wants to run the example unchanged.
 
 ## Source Of Truth
 
-This file is the repo's source of truth for agent behavior. Steep's product docs
-remain the source of truth for current YAML syntax and sync behavior:
+This file is the repository's source of truth for agent behavior. Steep's
+product docs remain the source of truth for current YAML syntax and sync
+behavior:
 
 - [Define in Code](https://help.steep.app/setup-and-manage/define-in-code) for
   GitHub connection and sync behavior.
@@ -54,7 +35,7 @@ remain the source of truth for current YAML syntax and sync behavior:
   exact YAML structure for modules, dimensions, join paths, filters, slices, and
   metrics.
 - [App-to-Code Migration Guide](https://help.steep.app/setup-and-manage/app-to-code-migration-guide)
-  only when the client is moving existing Steep app definitions into code.
+  only when existing Steep app definitions are being moved into code.
 
 If this file conflicts with Steep's product docs, follow Steep for product
 syntax and note the mismatch to the user.
@@ -70,7 +51,7 @@ Decide which mode applies before editing files:
 - App-to-code migration: preserve identifiers from existing Steep app
   definitions and follow the migration guide.
 
-Do not assume every client is migrating. Many clients are starting from dbt marts
+Do not assume every workspace is migrating. Many projects start from dbt marts
 plus optional MCP or database access.
 
 ## Inspect Before Asking
@@ -292,7 +273,7 @@ business sense. Do not default every metric to daily.
 - Filter expressions must use documented or verified values.
 - For `in`, follow the current Steep Code Reference for expression format.
 - Put `filters` and `slices` on metrics, not at the module root.
-- In this demo repo, use `schema.yml` `example_values` or values the user gave
+- In this repository, use `schema.yml` `example_values` or values the user gave
   in chat. Do not invent enum values.
 
 ## Git And Steep Sync

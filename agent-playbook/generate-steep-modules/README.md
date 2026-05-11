@@ -1,13 +1,14 @@
 # Generate Steep Modules Agent Playbook
 
-This is a visible, portable execution helper for any repo-aware coding agent.
+This is a visible, portable execution helper for any coding agent with
+repository access.
 The canonical guidance is [agent-guidance.md](../../agent-guidance.md); read it
 first and defer to it if anything here feels incomplete.
 
 ## Required Inputs
 
 - [agent-guidance.md](../../agent-guidance.md) - source-of-truth workflow and
-  client handoff instructions.
+  implementation instructions.
 - [business-context.md](../../business-context.md) - teams, questions,
   categories, owners, default slices, and sensitive-field deny list.
 - [star-schema/models/marts/schema.yml](../../star-schema/models/marts/schema.yml)
@@ -62,7 +63,8 @@ For current product syntax, validate against Steep's Code Reference linked from
      `many-to-one`.
    - Every metric needs `identifier`, `name`, `description`, `calculation`,
      `time`, and a relevant non-empty `dimensions` list.
-   - Prefer focused metric dimension lists over `"this.*"` for client demos.
+   - Prefer focused metric dimension lists over `"this.*"` for reviewable
+     output.
 
 6. Validate before returning.
    - YAML parses.
@@ -81,7 +83,7 @@ For current product syntax, validate against Steep's Code Reference linked from
 
 ## Guardrails
 
-- Do not create extra demo outputs, generated data, or sales scaffolding unless
+- Do not create extra example outputs, generated data, or scaffolding unless
   the user asks.
 - Do not rename existing metric or module identifiers casually.
 - Do not install new frameworks, global tools, hooks, or SDKs unless the user

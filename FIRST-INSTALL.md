@@ -1,4 +1,4 @@
-# First-Install Setup Prompt (Agent + macOS)
+# First-Install Setup Prompt (macOS)
 
 Use this prompt when setting up a teammate laptop for the first time.
 
@@ -6,9 +6,8 @@ Use this prompt when setting up a teammate laptop for the first time.
 
 First-install setup (macOS, internet available, human-in-the-loop):
 
-Audit this machine and install all missing developer requirements so a coding
-agent such as Claude Code, Codex, Cursor, or another repo-aware assistant can
-run this repo smoothly.
+Audit this machine and install all missing developer requirements so an AI
+coding agent can run this repo smoothly.
 
 Rules:
 - Ask for confirmation before each install step.
