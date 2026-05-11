@@ -32,7 +32,8 @@ final-response expectations.
   configuration.
 - [star-schema/models/sources.yml](star-schema/models/sources.yml): source
   table definitions.
-- `modules/`: Steep-as-code YAML output created by the agent.
+- `modules/`: example Steep-as-code YAML modules included for reference; for a
+  real workspace, the agent can update or replace these files.
 
 ## Customize For A Real Workspace
 

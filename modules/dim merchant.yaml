@@ -1,0 +1,9 @@
+module:
+  identifier: "dim_merchant"
+  schema: "steep_demo_v2"
+  table: "dim_merchant"
+  description: ""
+  dimensions:
+    - column: "merchant_key"
+      type: "categorical"
+      label: "Merchant key"
