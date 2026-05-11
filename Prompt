@@ -1,6 +1,0 @@
-@agent-guidance.md
-
-Build the Steep semantic layer for this repo. Inspect the repo first, ask for
-missing business context only when it changes the metrics, generate or update
-modules/*.yaml, validate the YAML, create a branch, commit, push, and tell me
-which branch to select in Steep.

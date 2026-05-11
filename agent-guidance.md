@@ -1,44 +1,75 @@
 # Agent Guidance: Build a Steep Semantic Layer
 
 You are an implementation agent working in a repository that should define a
-Steep semantic layer as code. Your job is to inspect the repo, gather only the
-missing context that materially changes the output, generate or update
+Steep semantic layer as code. Inspect the repository, collect only the missing
+business context that materially changes the output, generate or update
 Steep-as-code YAML under `modules/`, validate it, commit it, push the branch, and
 explain how to sync the branch in Steep.
 
-Start by reading the local files that describe the data model and business
-context. In this repository, the most important inputs are:
+## Outcome
 
-- `business-context.md` for the company story, teams, questions, owners, default
-  slices, and sensitive-field deny list.
-- `star-schema/models/marts/schema.yml` for dbt models, columns, descriptions,
-  examples, join hints, module targets, and reference metric recipes.
-- `star-schema/models/marts/*.sql` when column lineage or grain needs checking.
-- `agent-playbook/generate-steep-modules/` as an optional visible helper
-  playbook any agent can read.
-- `modules/*.yaml` as the generated Steep-as-code output.
+Produce a small, useful, validated Steep semantic layer. Prefer real checks over
+reasoning-only validation. Do not stop at a plan when files need to be written.
 
-When adapting the workflow to another repository, use that repository's business
-context, dbt docs, SQL, warehouse metadata, and existing semantic definitions.
-Do not keep this repository's Acme Pay story, mart names, owners, or example
-values unless the user explicitly wants to run the example unchanged.
+Expected output:
+
+- One YAML file per Steep module under `modules/`.
+- Metrics that answer stated business questions, not every numeric column.
+- Safe, useful dimensions for filtering and slicing.
+- Confirmed join paths with valid Steep cardinality.
+- A branch, commit, and push when the repository uses git.
+- A final explanation with assumptions, validation performed, and Steep sync
+  instructions.
 
 ## Source Of Truth
 
-This file is the repository's source of truth for agent behavior. Steep's
-product docs remain the source of truth for current YAML syntax and sync
-behavior:
+This file is the repository's source of truth for agent behavior. Steep product
+docs remain authoritative for YAML syntax and sync behavior:
 
-- [Define in Code](https://help.steep.app/setup-and-manage/define-in-code) for
+- [Define in Code](https://help.steep.app/setup-and-manage/define-in-code):
   GitHub connection and sync behavior.
-- [Code Reference](https://help.steep.app/setup-and-manage/code-reference) for
+- [Code Reference](https://help.steep.app/setup-and-manage/code-reference):
   exact YAML structure for modules, dimensions, join paths, filters, slices, and
   metrics.
-- [App-to-Code Migration Guide](https://help.steep.app/setup-and-manage/app-to-code-migration-guide)
-  only when existing Steep app definitions are being moved into code.
+- [App-to-Code Migration Guide](https://help.steep.app/setup-and-manage/app-to-code-migration-guide):
+  use only when existing Steep app definitions are being moved into code.
 
 If this file conflicts with Steep's product docs, follow Steep for product
 syntax and note the mismatch to the user.
+
+## Repository Inputs
+
+For this example repository, use:
+
+- `star-schema/models/marts/schema.yml`: dbt model and column docs, example
+  values, module targets, join hints, dimension metadata, and reference metric
+  recipes.
+- `star-schema/models/marts/*.sql`: mart SQL for grain, column lineage, and
+  physical table names when the schema file is unclear.
+- `star-schema/dbt_project.yml` and `star-schema/models/sources.yml`: dbt
+  project and source context.
+- `modules/*.yaml`: generated Steep-as-code output. Create `modules/` if it does
+  not exist.
+
+When adapting this workflow to another repository, use that repository's
+business context, dbt docs, SQL, warehouse metadata, and existing semantic
+definitions. Do not keep this repository's Acme Pay story, mart names, owners,
+or example values unless the user explicitly wants to run the example unchanged.
+
+## Technical Preflight
+
+Before implementation:
+
+- Check git status and current branch.
+- Check whether a remote exists if the user expects a pushed branch.
+- Use existing local tooling first. Do not install frameworks, global tools,
+  hooks, SDKs, or background agents unless the user explicitly approves that
+  exact change.
+- If a required tool is missing, ask before installing it. For macOS setup, a
+  reasonable checklist is: Xcode command line tools, Homebrew, git, GitHub CLI,
+  Node.js, pnpm, Python 3, pipx, jq, yq, and optionally Docker.
+- If `gh auth login` or another interactive auth step is needed, keep the human
+  in the loop.
 
 ## First Decision
 
@@ -46,8 +77,8 @@ Decide which mode applies before editing files:
 
 - Fresh build: create a semantic layer from dbt marts, warehouse metadata, and
   business context. This is the default.
-- Existing-layer improvement: update existing `modules/*.yaml` already in the
-  repo without renaming stable identifiers casually.
+- Existing-layer improvement: update existing `modules/*.yaml` without casually
+  renaming stable identifiers.
 - App-to-code migration: preserve identifiers from existing Steep app
   definitions and follow the migration guide.
 
@@ -58,10 +89,10 @@ plus optional MCP or database access.
 
 Before asking broad questions, inspect the repo for:
 
-- Agent instructions: `AGENTS.md`, `README.md`, `CLAUDE.md`, `GEMINI.md`,
-  tool-specific instructions, or similar files.
+- Agent instructions: `README.md`, `CLAUDE.md`, `GEMINI.md`, tool-specific
+  instructions, or similar files.
 - Business context: questionnaires, KPI docs, analytics briefs, owners, teams,
-  definitions, deny lists, or README sections.
+  definitions, deny lists, README sections, or comments in schema files.
 - dbt files: `dbt_project.yml`, `models/**/schema.yml`, `models/**/*.sql`,
   `sources.yml`, seeds, tests, and artifacts such as `manifest.json` or
   `catalog.json`.
@@ -74,35 +105,40 @@ Prefer discovered facts over guesses. Use MCP or database access when available
 to verify physical names, types, nullability, distinct enum values, and examples.
 If MCP is not available, use dbt docs, model SQL, tests, and source definitions.
 
-## Collect Business Context
+## Business Context To Collect
 
-If the repo does not already answer these, ask the user for the smallest useful
-set of answers before building important metrics:
+If the repository does not already answer these, ask the user for the smallest
+useful set of answers before building important metrics. Accept partial answers
+and use repo evidence for obvious gaps.
+
+Ask:
 
 ```text
 Company/product:
 What does the business do, and what product or workflow does this data describe?
 
-Teams/audiences:
-Who will use these metrics in Steep? Example: Finance, Sales, Marketing,
-Product, Operations, Support, Risk.
+Metric audiences:
+Who will use these metrics? Include teams, roles, or personas.
 
 Top questions:
-What are the most important questions these teams want to answer? List 3-10.
+What are the most important questions those audiences need to answer? List 3-10.
 
 KPI definitions:
 Which metrics matter most, and how should each one be calculated? Include
 filters, exclusions, edge cases, and whether it is a count, sum, rate, ratio,
 average, or distinct count.
 
+Metric ownership:
+Who owns the metrics? Which categories or folders should appear in Steep?
+
 Default slices:
-Which dimensions should users commonly break metrics down by? Example: country,
+Which dimensions should users commonly break metrics down by? Examples: country,
 region, plan, product, channel, status, segment, customer type, lifecycle stage,
 merchant category.
 
 Time behavior:
-Which date should each metric use? What time grains matter? Example: daily,
-weekly, monthly, quarterly. What timezone should reporting use?
+Which date should each metric use? Which time grains matter? What timezone
+should reporting use?
 
 Units and formatting:
 Which metrics are currency, percentages, counts, durations, or scores? Which
@@ -113,11 +149,8 @@ Which fields must not be exposed as dimensions? Include PII, customer names,
 emails, addresses, free-text notes, internal IDs, or restricted operational
 fields.
 
-Owners and categories:
-Who owns the metrics? Which categories should appear in Steep?
-
 Existing definitions:
-Are there existing Steep metrics, BI dashboards, Looker/LookML, MetricFlow,
+Are there existing Steep metrics, BI dashboards, LookML, MetricFlow,
 spreadsheets, or docs that should be preserved or matched?
 
 Warehouse access:
@@ -125,8 +158,51 @@ Is MCP or database access available to verify table names, columns, data types,
 and example values?
 ```
 
-Accept partial answers. If the user cannot answer everything, build a small
-useful first version and list assumptions clearly.
+If the user cannot answer everything, build a small useful first version and
+list assumptions clearly.
+
+## Example Business Context
+
+Use this context only when the user wants to run this repository's example as-is.
+For a real workspace, replace it with the user's actual business context.
+
+- Company: Acme Pay.
+- Industry: B2B SMB neobank.
+- Stage and scale: Series B, approximately $8M ARR, around 5,000 SMB customers,
+  around 2M transactions per month.
+- Geographies: US primary, plus GB, NL, SE, ES.
+- Reporting currency: USD.
+- Example personas: CFO, Head of Operations, Head of Risk, Head of Marketing.
+- Default time grains: daily, weekly, monthly.
+- Default slices: country, customer_tier, plan_name, transaction_type.
+- Sensitive fields to exclude by default: email, last_name, first_name,
+  latitude, longitude.
+- Module identifier style: snake_case.
+- Metric identifier prefix: none.
+- BigQuery dataset for Steep YAML `schema`: `steep_demo_v2`.
+
+Team questions and ownership:
+
+- Finance:
+  - Questions: MRR and ARR trend by plan; TPV growth month over month; revenue
+    by country.
+  - Category: Commercial.
+  - Owner email: finance@acmepay.com.
+- Operations:
+  - Questions: transaction success rate; failed transaction concentration by
+    geography and payment method; KYB approval duration.
+  - Category: Operations.
+  - Owner email: ops@acmepay.com.
+- Risk:
+  - Questions: fraud rate by geography and payment method; open high-severity
+    risk events; risk event resolution speed.
+  - Category: Risk.
+  - Owner email: risk@acmepay.com.
+- Marketing:
+  - Questions: customer acquisition by channel; activation rate by registration
+    source; ad spend ROI by network.
+  - Category: Marketing.
+  - Owner email: marketing@acmepay.com.
 
 ## Translate Data Models Into Steep
 
@@ -149,10 +225,24 @@ For each candidate mart or table:
 Build metrics that answer business questions. Do not aggregate every numeric
 column just because it exists.
 
-## Module Rules
+## Branch And Files
 
-Use one YAML file per Steep module unless the repo already has a clear
-convention. Write files under `modules/*.yaml`.
+When in a git repo and editing `modules/*.yaml`:
+
+1. Create a feature branch before editing YAML unless the user explicitly tells
+   you to work directly on the current branch.
+2. Commit the generated or updated YAML.
+3. Push the branch to GitHub.
+4. Tell the user the branch name.
+
+Steep syncs from the repository and branch configured in its GitHub connection.
+If you push a different branch, the user must either select that branch in Steep
+or merge the PR into the branch Steep already watches.
+
+Write output under `modules/*.yaml`. Use two-space YAML indentation. Keep one
+module per file unless the repo already has a different convention.
+
+## Module Rules
 
 Each module should normally include:
 
@@ -206,9 +296,8 @@ Do not expose these by default:
 - Free-text notes, case descriptions, comments, or support messages.
 - Every string column just because it exists.
 
-In this repo, follow `business-context.md` for the sensitive-field deny list and
-`schema.yml` `meta.dimension_type`, `meta.is_join_key`, and `example_values`
-when present.
+In this repository, follow `schema.yml` `meta.dimension_type`,
+`meta.is_join_key`, and `example_values` when present.
 
 ## Join Path Rules
 
@@ -276,19 +365,192 @@ business sense. Do not default every metric to daily.
 - In this repository, use `schema.yml` `example_values` or values the user gave
   in chat. Do not invent enum values.
 
-## Git And Steep Sync
+## YAML Shape Reference
 
-When in a git repo and editing `modules/*.yaml`:
+Each `.yaml` file must have exactly one root key: `module`, `metric`, or
+`dimension`. Module files are the normal output for this workflow.
 
-1. Create a feature branch before editing YAML unless the user explicitly tells
-   you to work directly on the current branch.
-2. Commit the generated or updated YAML.
-3. Push the branch to GitHub.
-4. Tell the user the branch name.
+```yaml
+module:
+  identifier: string
+  schema: string
+  table: string
+  label: string
+  description: string
+  dimensions:
+    - column: string
+      label: string
+      description: string
+      type: categorical | city | country | h3-cell-index | time
+  metrics:
+    - identifier: string
+      name: string
+      description: string
+      calculation: sum | count | count-distinct | ratio | custom-value | custom-ratio
+      time: table.column
+      dimensions:
+        - country
+  joinPaths:
+    - from:
+        column: string
+      to:
+        schema: string
+        table: string
+        column: string
+      type: one-to-one | one-to-many
+```
 
-Steep syncs from the repository and branch configured in its GitHub connection.
-If you push a different branch, the user must either select that branch in Steep
-or merge the PR into the branch Steep already watches.
+Calculation-specific fields:
+
+- `sum`: requires `value: table.column`.
+- `count`: no additional fields.
+- `count-distinct`: requires `distinct_on: table.column`.
+- `ratio`: requires `numerator`, `denominator`, and `format`.
+- `custom-value`: requires `sql_expression`.
+- `custom-ratio`: requires `numerator_sql`, `denominator_sql`, and `format`.
+
+Filter shape:
+
+```yaml
+filters:
+  - column: status
+    operator: equals
+    expression: completed
+```
+
+Slice shape:
+
+```yaml
+slices:
+  - name: US
+    filter:
+      column: country
+      operator: equals
+      expression: US
+```
+
+Supported dimension types: `categorical`, `city`, `country`, `h3-cell-index`,
+and `time`.
+
+Common filter operators: `equals`, `not-equals`, `less-than`,
+`less-than-or-equal`, `greater-than`, `greater-than-or-equal`, `in`, `not-in`,
+`is`, `is-not`, `like`, and `not-like`.
+
+## Metric Patterns
+
+Count with filter:
+
+```yaml
+metrics:
+  - identifier: completed_transactions
+    name: Completed Transactions
+    description: Count of transaction rows where processing status is completed.
+    calculation: count
+    time: fact_transactions.created_at
+    filters:
+      - column: status
+        operator: equals
+        expression: completed
+    category: Operations
+    dimensions:
+      - country
+      - transaction_type
+      - payment_method
+```
+
+Sum with filter:
+
+```yaml
+metrics:
+  - identifier: revenue
+    name: Revenue
+    description: Sum of completed transaction amount in USD, sliced by geography and merchant context.
+    calculation: sum
+    value: fact_transactions.amount
+    time: fact_transactions.created_at
+    filters:
+      - column: status
+        operator: equals
+        expression: completed
+    category: Commercial
+    dimensions:
+      - country
+      - transaction_type
+      - payment_method
+      - merchant_category
+```
+
+Percentage via custom ratio:
+
+```yaml
+metrics:
+  - identifier: success_rate
+    name: Transaction Success Rate
+    description: Share of transaction rows completed out of all transaction rows.
+    calculation: custom-ratio
+    numerator_sql: "SUM(CASE WHEN fact_transactions.status = 'completed' THEN 1 END)"
+    denominator_sql: "COUNT(*)"
+    format: percentage
+    time: fact_transactions.created_at
+    category: Operations
+    dimensions:
+      - country
+      - payment_method
+      - transaction_type
+```
+
+Average via custom value:
+
+```yaml
+metrics:
+  - identifier: avg_kyb_completion_days
+    name: Avg KYB Completion Days
+    description: Average number of days between KYB start and approval for customer records.
+    calculation: custom-value
+    sql_expression: "AVG(dim_customer.kyb_completion_days)"
+    time: dim_customer.created_at
+    category: Operations
+    dimensions:
+      - country
+      - kyb_status
+      - customer_tier
+```
+
+Count distinct:
+
+```yaml
+metrics:
+  - identifier: unique_customers
+    name: Unique Customers
+    description: Count of distinct customers represented in transaction activity.
+    calculation: count-distinct
+    distinct_on: fact_transactions.customer_id
+    time: fact_transactions.created_at
+    dimensions:
+      - country
+      - transaction_type
+```
+
+Monthly snapshot grains:
+
+```yaml
+time_grains:
+  - monthly
+  - quarterly
+  - yearly
+```
+
+`in` operator:
+
+```yaml
+filters:
+  - column: risk_flag
+    operator: in
+    expression: high_risk,suspicious,aml_review
+```
+
+Use comma-separated values in `expression` without spaces unless Steep's current
+Code Reference says otherwise.
 
 ## Reset Or Delete Requests
 
