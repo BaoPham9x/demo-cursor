@@ -1,4 +1,4 @@
-# First-Install Setup Prompt (Cursor + macOS)
+# First-Install Setup Prompt (Agent + macOS)
 
 Use this prompt when setting up a teammate laptop for the first time.
 
@@ -6,7 +6,9 @@ Use this prompt when setting up a teammate laptop for the first time.
 
 First-install setup (macOS, internet available, human-in-the-loop):
 
-Audit this machine and install all missing developer requirements so Cursor can run this repo smoothly.
+Audit this machine and install all missing developer requirements so a coding
+agent such as Claude Code, Codex, Cursor, or another repo-aware assistant can
+run this repo smoothly.
 
 Rules:
 - Ask for confirmation before each install step.
@@ -22,4 +24,3 @@ Checklist:
    - installed tools + versions
    - anything skipped/failed
    - exact follow-up commands I should run manually if needed.
-

@@ -1,4 +1,4 @@
-# Demo Cursor - Steep-as-code Client Example
+# Steep-as-code Agent Client Example
 
 This repo is a compact example for showing a client how an agent can generate
 Steep-as-code YAML from dbt-style marts, business context, and optional warehouse
@@ -8,7 +8,9 @@ access.
 
 Use one guidance file: [agent-guidance.md](agent-guidance.md).
 
-In Cursor or Claude Code, attach it as `@agent-guidance.md` and send:
+In Claude Code, Codex, Cursor, or another repo-aware coding agent, attach or
+open `agent-guidance.md`. If the agent supports file mentions, use
+`@agent-guidance.md`, then send:
 
 ```text
 Build the Steep semantic layer for this repo. Inspect the repo first, ask for
@@ -30,13 +32,15 @@ example input data for the agent.
   needs to inspect grain or column lineage.
 - [modules/](modules): Steep-as-code YAML output. This repo tracks only
   `modules/.gitkeep` until an agent generates actual modules.
-- [.cursor/skills/generate-steep-modules/](.cursor/skills/generate-steep-modules):
-  optional Cursor helper skill for this demo workspace.
+- [agent-playbook/generate-steep-modules/](agent-playbook/generate-steep-modules):
+  optional visible helper playbook for agents that benefit from a step-by-step
+  execution guide.
 
 ## Notes
 
 - Official Steep product links and YAML rules are listed in
   [agent-guidance.md](agent-guidance.md).
-- The old duplicate docs have been removed so future edits happen in one place.
+- The old duplicate docs and hidden agent-specific folders have been removed so
+  future edits happen in one visible place.
 - For a real client, replace the demo business context and schema details before
   asking the agent to generate metrics.

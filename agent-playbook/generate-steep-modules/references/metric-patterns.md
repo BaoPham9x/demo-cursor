@@ -1,6 +1,6 @@
 # Metric patterns (Steep-as-code)
 
-Patterns distilled from the production-style demo modules. Use with `star-schema/models/marts/schema.yml` `meta.steep.reference_metrics`. For full metric and module YAML rules, see [Steep Code Reference](https://help.steep.app/setup-and-manage/code-reference). For join placement, `identifier` vs `table`, metric `time` choices, and required metric descriptions/dimensions, see [docs/cursor-steep-guidance.md](../../../../docs/cursor-steep-guidance.md).
+Patterns distilled from the production-style demo modules. Use with `star-schema/models/marts/schema.yml` `meta.steep.reference_metrics`. For full metric and module YAML rules, see [Steep Code Reference](https://help.steep.app/setup-and-manage/code-reference). For join placement, `identifier` vs `table`, metric `time` choices, and required metric descriptions/dimensions, see [agent-guidance.md](../../../agent-guidance.md) and the parent [agent playbook](../README.md).
 
 ## 1. Count with filter
 

@@ -1,22 +1,16 @@
----
-name: generate-steep-modules
-description: Generate Steep-as-code YAML modules from this repo's dbt schema.yml, business context, and optional warehouse checks. Use when the user asks for Steep metrics, semantic YAML, join paths, KPIs, or modules under modules/.
-argument-hint: optional team name or table, for example Finance or transactions
----
+# Generate Steep Modules Agent Playbook
 
-# Generate Steep Modules
-
-This skill is an execution helper for the demo workspace. The canonical guidance
-is [agent-guidance.md](../../../agent-guidance.md); read it first and defer to it
-if anything here feels incomplete.
+This is a visible, portable execution helper for any repo-aware coding agent.
+The canonical guidance is [agent-guidance.md](../../agent-guidance.md); read it
+first and defer to it if anything here feels incomplete.
 
 ## Required Inputs
 
-- [agent-guidance.md](../../../agent-guidance.md) - source-of-truth workflow and
+- [agent-guidance.md](../../agent-guidance.md) - source-of-truth workflow and
   client handoff instructions.
-- [business-context.md](../../../business-context.md) - teams, questions,
+- [business-context.md](../../business-context.md) - teams, questions,
   categories, owners, default slices, and sensitive-field deny list.
-- [star-schema/models/marts/schema.yml](../../../star-schema/models/marts/schema.yml)
+- [star-schema/models/marts/schema.yml](../../star-schema/models/marts/schema.yml)
   - dbt models, columns, descriptions, example values, join hints, target module
   metadata, and reference metric recipes.
 - [references/yaml-schema-reference.md](references/yaml-schema-reference.md) -

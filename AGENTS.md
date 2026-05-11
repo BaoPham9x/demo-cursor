@@ -7,10 +7,10 @@ Steep-as-code, or join paths for this demo dataset:
    guidance and client handoff file.
 1. Read [business-context.md](business-context.md) for teams, questions,
    categories, owner emails, default slices, and the sensitive-field deny list.
-2. Follow [.cursor/skills/generate-steep-modules/SKILL.md](.cursor/skills/generate-steep-modules/SKILL.md)
-   when the local Cursor skill is available. Before any `modules/*.yaml` edits in
-   a git repo, create a feature branch unless the user explicitly asks to work on
-   the current branch.
+2. Follow [agent-playbook/generate-steep-modules/README.md](agent-playbook/generate-steep-modules/README.md)
+   when a step-by-step execution guide is useful. Before any `modules/*.yaml`
+   edits in a git repo, create a feature branch unless the user explicitly asks
+   to work on the current branch.
 3. Use [star-schema/models/marts/schema.yml](star-schema/models/marts/schema.yml)
    for columns, types, `example_values`, and `meta.steep` hints for this demo.
    Column `description` in `schema.yml` is dbt documentation only: business/data
@@ -21,4 +21,5 @@ Steep-as-code, or join paths for this demo dataset:
 4. For canonical Steep YAML rules and sync behavior, prefer Steep's official
    Code Reference and Define in Code docs linked from [agent-guidance.md](agent-guidance.md).
 
-If the skill does not auto-trigger, point the user at [agent-guidance.md](agent-guidance.md).
+If the agent needs a client-facing starting point, point the user at
+[agent-guidance.md](agent-guidance.md).

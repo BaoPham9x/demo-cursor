@@ -1,11 +1,11 @@
-# Enriched metadata for Steep-as-code generation (read by Cursor skill).
+# Enriched metadata for Steep-as-code generation (read by any repo-aware agent).
 # Distilled from demo-data-generator data-generation/models/fintech/*.ts and modules/*.yaml.
 # BigQuery dataset placeholder: steep_demo_v2 (replace in generated YAML if your dataset differs).
 #
 # Column and model `description` fields are dbt documentation (business / warehouse meaning only).
 # Steep wiring (module id, joins, reference metrics, dimension_type for codegen) lives under `meta.steep`
 # and column `meta.*` — keep those separate so dbt docs stay fair for non-Steep readers and for
-# experiments where Cursor infers a semantic layer from plain dbt + SQL.
+# experiments where an agent infers a semantic layer from plain dbt + SQL.
 
 version: 2
 

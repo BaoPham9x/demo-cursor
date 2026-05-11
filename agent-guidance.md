@@ -1,7 +1,9 @@
 # Agent Guidance: Build a Steep Semantic Layer
 
-This is the one client-facing guidance file for this example repo. Attach it in
-Cursor or Claude Code as `@agent-guidance.md`, then ask:
+This is the one client-facing guidance file for this example repo. Open or
+attach it in any coding agent the client uses, such as Claude Code, Codex,
+Cursor, or another repo-aware assistant. If the agent supports file mentions,
+reference it as `@agent-guidance.md`, then ask:
 
 ```text
 Build the Steep semantic layer for this repo.
@@ -13,8 +15,8 @@ branch, and explain how to sync the branch in Steep.
 
 ## What To Send To A Client
 
-Send the repo plus this file. The client can start a new Cursor or Claude Code
-chat with one attachment:
+Send the repo plus this file. The client can start a new agent chat with one
+attachment or file reference:
 
 ```text
 @agent-guidance.md
@@ -32,8 +34,8 @@ For this demo repo, the agent will use:
 - `star-schema/models/marts/schema.yml` for dbt models, columns, descriptions,
   examples, join hints, module targets, and reference metric recipes.
 - `star-schema/models/marts/*.sql` when column lineage or grain needs checking.
-- `.cursor/skills/generate-steep-modules/` as a local helper skill when Cursor
-  detects it.
+- `agent-playbook/generate-steep-modules/` as an optional visible helper
+  playbook any agent can read.
 - `modules/*.yaml` as the generated Steep-as-code output.
 
 When adapting this example to a real client, replace the business context and dbt
@@ -75,8 +77,8 @@ plus optional MCP or database access.
 
 Before asking broad questions, inspect the repo for:
 
-- Agent instructions: `AGENTS.md`, `README.md`, `.cursor/rules/*`,
-  `.claude/*`, or similar files.
+- Agent instructions: `AGENTS.md`, `README.md`, `CLAUDE.md`, `GEMINI.md`,
+  tool-specific instructions, or similar files.
 - Business context: questionnaires, KPI docs, analytics briefs, owners, teams,
   definitions, deny lists, or README sections.
 - dbt files: `dbt_project.yml`, `models/**/schema.yml`, `models/**/*.sql`,
